@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/index.js",
     "example": "node examples/basic-fetch.js",
-    "check": "node --check src/index.js && node --check examples/basic-fetch.js"
+    "catbox": "node examples/catbox.js",
+    "check": "node --check src/index.js && node --check src/catbox.js && node --check examples/basic-fetch.js && node --check examples/catbox.js"
   },
   "keywords": [
     "scraper",
