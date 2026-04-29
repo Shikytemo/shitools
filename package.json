@@ -1,5 +1,5 @@
 {
-  "name": "shitools",
+  "name": "@shikytemo/shitools",
   "version": "1.0.0",
   "description": "Reusable scraping tools collection.",
   "main": "src/index.js",
