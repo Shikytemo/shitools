@@ -1,6 +1,6 @@
 {
   "name": "@shikytemo/shitools",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "Reusable scraping tools collection.",
   "main": "src/index.js",
   "bin": {
@@ -18,7 +18,7 @@
     "start": "node src/index.js",
     "example": "node examples/basic-fetch.js",
     "catbox": "node examples/catbox.js",
-    "check": "node --check src/index.js && node --check src/anime.js && node --check src/catbox.js && node --check src/converter.js && node --check src/indo.js && node --check src/pinterest.js && node --check src/registry.js && node --check src/web.js && node --check examples/basic-fetch.js && node --check examples/catbox.js && node --check examples/pinterest.js && node --check examples/scrapers.js"
+    "check": "node --check src/index.js && node --check src/anime.js && node --check src/catbox.js && node --check src/converter.js && node --check src/indo.js && node --check src/pinterest.js && node --check src/registry.js && node --check src/samehadaku.js && node --check src/web.js && node --check examples/basic-fetch.js && node --check examples/catbox.js && node --check examples/pinterest.js && node --check examples/scrapers.js"
   },
   "keywords": [
     "scraper",

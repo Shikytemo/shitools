@@ -86,6 +86,7 @@ node examples/scrapers.js npm-search whatsapp bot
 node examples/scrapers.js github Shikytemo/shitools
 node examples/scrapers.js github-search whatsapp bot scraper
 node examples/scrapers.js anime one piece
+node examples/scrapers.js samehadaku gnosia episode 20
 ```
 
 Pemakaian module:
@@ -94,6 +95,7 @@ Pemakaian module:
 import {
 	getGithubRepo,
 	getNpmPackage,
+	getSamehadakuStream,
 	scrapeWebsite,
 	searchAnime,
 	searchGithubRepos,
@@ -102,6 +104,7 @@ import {
 
 const page = await scrapeWebsite('https://example.com')
 const anime = await searchAnime('one piece')
+const stream = await getSamehadakuStream('gnosia episode 20')
 const repo = await getGithubRepo('Shikytemo/shitools')
 const npmPackage = await getNpmPackage('@shikytemo/shitools')
 ```
@@ -142,6 +145,19 @@ const narutoQuotes = await getKatanimeQuotesByAnime('naruto')
 const search = await searchKatanimeQuotes('kuat')
 ```
 
+Samehadaku stream scraper mengambil halaman langsung tanpa Jina Reader. Bisa input query, URL series, atau URL episode:
+
+```js
+import {
+	getSamehadakuStream,
+	searchSamehadaku,
+	getSamehadakuSeriesEpisodes
+} from '@shikytemo/shitools'
+
+const result = await getSamehadakuStream('gnosia episode 20')
+console.log(result.episode.mirrors)
+```
+
 ## Struktur
 
 ```txt
@@ -152,6 +168,7 @@ src/converter.js Media converter helper
 src/indo.js     Public Indonesia anime quote APIs
 src/pinterest.js Pinterest scraper
 src/registry.js GitHub/NPM public REST wrapper
+src/samehadaku.js Samehadaku search/episode stream scraper
 src/web.js      Generic website metadata scraper
 examples/        contoh pemakaian
 data/            output lokal, tidak ikut git
