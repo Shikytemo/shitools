@@ -127,6 +127,21 @@ import {
 } from '@shikytemo/shitools'
 ```
 
+API publik Indonesia yang aman dipasang:
+
+```js
+import {
+	getKatanimeAnimeList,
+	getKatanimeQuotesByAnime,
+	getRandomKatanimeQuotes,
+	searchKatanimeQuotes
+} from '@shikytemo/shitools'
+
+const quotes = await getRandomKatanimeQuotes()
+const narutoQuotes = await getKatanimeQuotesByAnime('naruto')
+const search = await searchKatanimeQuotes('kuat')
+```
+
 ## Struktur
 
 ```txt
@@ -134,6 +149,7 @@ src/             core helper
 src/anime.js    Jikan anime/manga REST wrapper
 src/catbox.js   Catbox API wrapper
 src/converter.js Media converter helper
+src/indo.js     Public Indonesia anime quote APIs
 src/pinterest.js Pinterest scraper
 src/registry.js GitHub/NPM public REST wrapper
 src/web.js      Generic website metadata scraper
