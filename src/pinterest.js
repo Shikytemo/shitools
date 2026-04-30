@@ -30,6 +30,95 @@ const uniqueBy = (items, key) => {
 
 const limitItems = (items, limit) => Number.isFinite(limit) && limit > 0 ? items.slice(0, limit) : items
 
+const pinterestImageSizePattern = /^(?:originals|\d+x(?:\d+)?(?:_[a-z]+)?)$/i
+
+export const toPinterestOriginalUrl = url => {
+	const clean = cleanupUrl(url)
+	if (!clean || !/^https?:\/\//i.test(clean)) return clean
+
+	try {
+		const parsed = new URL(clean)
+		if (parsed.hostname !== 'i.pinimg.com') return clean
+
+		const parts = parsed.pathname.split('/').filter(Boolean)
+		if (!parts.length || !pinterestImageSizePattern.test(parts[0])) return clean
+
+		parts[0] = 'originals'
+		parsed.pathname = `/${parts.join('/')}`
+		return parsed.toString()
+	} catch {
+		return clean
+	}
+}
+
+const pinterestMediaKey = item => {
+	try {
+		const parsed = new URL(item.url)
+		if (parsed.hostname !== 'i.pinimg.com') return item.url
+
+		const parts = parsed.pathname.split('/').filter(Boolean)
+		if (parts.length > 1 && pinterestImageSizePattern.test(parts[0])) {
+			return `${parsed.hostname}/${parts.slice(1).join('/')}`
+		}
+
+		return `${parsed.hostname}/${parts.join('/')}`
+	} catch {
+		return item.url
+	}
+}
+
+const pinterestMediaScore = item => {
+	try {
+		const parsed = new URL(item.url)
+		if (parsed.hostname === 'v.pinimg.com') return 90000
+		if (parsed.hostname !== 'i.pinimg.com') return 0
+
+		const segment = parsed.pathname.split('/').filter(Boolean)[0] || ''
+		if (segment === 'originals') return 100000
+
+		const [width = 0, height = 0] = segment.match(/\d+/g)?.map(Number) || []
+		return Math.max(width, height)
+	} catch {
+		return 0
+	}
+}
+
+const bestPinterestMedia = items => {
+	const byKey = new Map()
+
+	for (const item of items) {
+		const key = pinterestMediaKey(item)
+		const current = byKey.get(key)
+		if (!current || pinterestMediaScore(item) > pinterestMediaScore(current)) {
+			byKey.set(key, item)
+		}
+	}
+
+	return [...byKey.values()]
+}
+
+const isLowQualityPinterestImage = item => {
+	if (item.type !== 'image') return false
+
+	try {
+		const parsed = new URL(item.url)
+		if (parsed.hostname !== 'i.pinimg.com') return false
+
+		const parts = parsed.pathname.split('/').filter(Boolean)
+		const first = parts[0] || ''
+		const file = parts.at(-1) || ''
+		return !pinterestImageSizePattern.test(first) || /(?:thumbnail|avatar|profile)/i.test(file)
+	} catch {
+		return false
+	}
+}
+
+const preferPinterestMainMedia = items => {
+	const best = bestPinterestMedia(uniqueBy(items, 'url'))
+	const preferred = best.filter(item => !isLowQualityPinterestImage(item))
+	return preferred.length ? preferred : best
+}
+
 const isPinterestUrl = input => {
 	try {
 		const value = /^https?:\/\//i.test(input) ? input : `https://${input}`
@@ -134,10 +223,12 @@ const pushMedia = (items, url, type = 'unknown', source = 'unknown', extra = {})
 	const guessedType = type === 'unknown'
 		? lowered.includes('.mp4') || lowered.includes('/videos/') || lowered.includes('v.pinimg.com') ? 'video' : 'image'
 		: type
+	const hdUrl = guessedType === 'image' ? toPinterestOriginalUrl(clean) : clean
 
 	items.push({
 		type: guessedType,
-		url: clean,
+		url: hdUrl,
+		...(hdUrl !== clean ? { original_url: clean } : {}),
 		source,
 		...extra
 	})
@@ -228,7 +319,7 @@ const parseHtml = (html, pageUrl) => {
 		source_url: pageUrl,
 		title: getMeta($, 'og:title') || $('title').first().text().trim(),
 		description: getMeta($, 'og:description') || getMeta($, 'description'),
-		media: uniqueBy(media, 'url')
+		media: preferPinterestMainMedia(media)
 	}
 }
 
