@@ -31,8 +31,9 @@ const uniqueBy = (items, key) => {
 const limitItems = (items, limit) => Number.isFinite(limit) && limit > 0 ? items.slice(0, limit) : items
 
 const pinterestImageSizePattern = /^(?:originals|\d+x(?:\d+)?(?:_[a-z]+)?)$/i
+const pinterestPreferredImageSize = '1200x'
 
-export const toPinterestOriginalUrl = url => {
+export const toPinterestHighResUrl = url => {
 	const clean = cleanupUrl(url)
 	if (!clean || !/^https?:\/\//i.test(clean)) return clean
 
@@ -43,13 +44,15 @@ export const toPinterestOriginalUrl = url => {
 		const parts = parsed.pathname.split('/').filter(Boolean)
 		if (!parts.length || !pinterestImageSizePattern.test(parts[0])) return clean
 
-		parts[0] = 'originals'
+		parts[0] = pinterestPreferredImageSize
 		parsed.pathname = `/${parts.join('/')}`
 		return parsed.toString()
 	} catch {
 		return clean
 	}
 }
+
+export const toPinterestOriginalUrl = toPinterestHighResUrl
 
 const pinterestMediaKey = item => {
 	try {
@@ -74,7 +77,8 @@ const pinterestMediaScore = item => {
 		if (parsed.hostname !== 'i.pinimg.com') return 0
 
 		const segment = parsed.pathname.split('/').filter(Boolean)[0] || ''
-		if (segment === 'originals') return 100000
+		if (segment === pinterestPreferredImageSize) return 100000
+		if (segment === 'originals') return 90000
 
 		const [width = 0, height = 0] = segment.match(/\d+/g)?.map(Number) || []
 		return Math.max(width, height)
@@ -223,7 +227,7 @@ const pushMedia = (items, url, type = 'unknown', source = 'unknown', extra = {})
 	const guessedType = type === 'unknown'
 		? lowered.includes('.mp4') || lowered.includes('/videos/') || lowered.includes('v.pinimg.com') ? 'video' : 'image'
 		: type
-	const hdUrl = guessedType === 'image' ? toPinterestOriginalUrl(clean) : clean
+	const hdUrl = guessedType === 'image' ? toPinterestHighResUrl(clean) : clean
 
 	items.push({
 		type: guessedType,

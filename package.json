@@ -1,6 +1,6 @@
 {
   "name": "@shikytemo/shitools",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Reusable scraping tools collection.",
   "main": "src/index.js",
   "bin": {
