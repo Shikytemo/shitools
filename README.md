@@ -106,6 +106,27 @@ const repo = await getGithubRepo('Shikytemo/shitools')
 const npmPackage = await getNpmPackage('@shikytemo/shitools')
 ```
 
+Anime scraper pakai Jikan v4. Export yang tersedia:
+
+```js
+import {
+	getAnimeById,
+	getAnimeCharacters,
+	getAnimeEpisodes,
+	getAnimeGenres,
+	getAnimePictures,
+	getAnimeRecommendations,
+	getAnimeReviews,
+	getCurrentSeasonAnime,
+	getRandomAnime,
+	getSeasonAnime,
+	getTopAnime,
+	searchAnime,
+	searchCharacters,
+	searchManga
+} from '@shikytemo/shitools'
+```
+
 ## Struktur
 
 ```txt
