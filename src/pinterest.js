@@ -28,10 +28,13 @@ const uniqueBy = (items, key) => {
 	})
 }
 
+const uniqueValues = items => [...new Set(items.filter(Boolean))]
+
 const limitItems = (items, limit) => Number.isFinite(limit) && limit > 0 ? items.slice(0, limit) : items
 
 const pinterestImageSizePattern = /^(?:originals|\d+x(?:\d+)?(?:_[a-z]+)?)$/i
 const pinterestPreferredImageSize = '1200x'
+const pinterestFallbackImageSizes = ['1200x', '736x', '564x', '474x', '236x', 'originals']
 
 export const toPinterestHighResUrl = url => {
 	const clean = cleanupUrl(url)
@@ -53,6 +56,29 @@ export const toPinterestHighResUrl = url => {
 }
 
 export const toPinterestOriginalUrl = toPinterestHighResUrl
+
+export const getPinterestImageVariants = url => {
+	const clean = cleanupUrl(url)
+	if (!clean || !/^https?:\/\//i.test(clean)) return clean ? [clean] : []
+
+	try {
+		const parsed = new URL(clean)
+		if (parsed.hostname !== 'i.pinimg.com') return [clean]
+
+		const parts = parsed.pathname.split('/').filter(Boolean)
+		if (!parts.length || !pinterestImageSizePattern.test(parts[0])) return [clean]
+
+		return uniqueValues(
+			pinterestFallbackImageSizes.map(size => {
+				const next = new URL(clean)
+				next.pathname = `/${[size, ...parts.slice(1)].join('/')}`
+				return next.toString()
+			}).concat(clean)
+		)
+	} catch {
+		return [clean]
+	}
+}
 
 const pinterestMediaKey = item => {
 	try {
@@ -228,11 +254,13 @@ const pushMedia = (items, url, type = 'unknown', source = 'unknown', extra = {})
 		? lowered.includes('.mp4') || lowered.includes('/videos/') || lowered.includes('v.pinimg.com') ? 'video' : 'image'
 		: type
 	const hdUrl = guessedType === 'image' ? toPinterestHighResUrl(clean) : clean
+	const fallbackUrls = guessedType === 'image' ? getPinterestImageVariants(clean) : [clean]
 
 	items.push({
 		type: guessedType,
 		url: hdUrl,
 		...(hdUrl !== clean ? { original_url: clean } : {}),
+		...(fallbackUrls.length > 1 ? { fallback_urls: fallbackUrls } : {}),
 		source,
 		...extra
 	})
