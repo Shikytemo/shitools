@@ -1,10 +1,11 @@
 {
   "name": "@shikytemo/shitools",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Reusable scraping tools collection.",
   "main": "src/index.js",
   "bin": {
-    "shitools-catbox": "examples/catbox.js"
+    "shitools-catbox": "examples/catbox.js",
+    "shitools-pinterest": "examples/pinterest.js"
   },
   "type": "module",
   "files": [
@@ -16,7 +17,7 @@
     "start": "node src/index.js",
     "example": "node examples/basic-fetch.js",
     "catbox": "node examples/catbox.js",
-    "check": "node --check src/index.js && node --check src/catbox.js && node --check examples/basic-fetch.js && node --check examples/catbox.js"
+    "check": "node --check src/index.js && node --check src/catbox.js && node --check src/pinterest.js && node --check examples/basic-fetch.js && node --check examples/catbox.js && node --check examples/pinterest.js"
   },
   "keywords": [
     "scraper",
@@ -33,6 +34,10 @@
     "url": "https://github.com/Shikytemo/shitools/issues"
   },
   "homepage": "https://github.com/Shikytemo/shitools#readme",
+  "dependencies": {
+    "axios": "^1.15.2",
+    "cheerio": "^1.2.0"
+  },
   "engines": {
     "node": ">=20"
   }
