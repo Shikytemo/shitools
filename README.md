@@ -75,13 +75,47 @@ const video = await toVideo({ buffer, mimetype: 'image/webp' })
 
 Pastikan binary `ffmpeg` tersedia di device/server.
 
+## Scraper Tools
+
+Scraper tambahan yang aman dipakai ulang di bot atau REST API kecil.
+
+```sh
+node examples/scrapers.js web https://example.com
+node examples/scrapers.js npm @shikytemo/shitools
+node examples/scrapers.js npm-search whatsapp bot
+node examples/scrapers.js github Shikytemo/shitools
+node examples/scrapers.js github-search whatsapp bot scraper
+node examples/scrapers.js anime one piece
+```
+
+Pemakaian module:
+
+```js
+import {
+	getGithubRepo,
+	getNpmPackage,
+	scrapeWebsite,
+	searchAnime,
+	searchGithubRepos,
+	searchNpmPackages
+} from '@shikytemo/shitools'
+
+const page = await scrapeWebsite('https://example.com')
+const anime = await searchAnime('one piece')
+const repo = await getGithubRepo('Shikytemo/shitools')
+const npmPackage = await getNpmPackage('@shikytemo/shitools')
+```
+
 ## Struktur
 
 ```txt
 src/             core helper
+src/anime.js    Jikan anime/manga REST wrapper
 src/catbox.js   Catbox API wrapper
 src/converter.js Media converter helper
 src/pinterest.js Pinterest scraper
+src/registry.js GitHub/NPM public REST wrapper
+src/web.js      Generic website metadata scraper
 examples/        contoh pemakaian
 data/            output lokal, tidak ikut git
 ```
