@@ -60,11 +60,27 @@ const result = await pinterest('anime girl', { limit: 10 })
 console.log(result.media)
 ```
 
+## Converter
+
+Helper converter media berbasis ffmpeg buat bot WhatsApp atau script Node.js.
+
+```js
+import { toAudio, toPTT, toSticker, toVideo } from '@shikytemo/shitools'
+
+const sticker = await toSticker({ buffer, mimetype: 'image/png' })
+const audio = await toAudio({ buffer, mimetype: 'video/mp4' })
+const voiceNote = await toPTT({ buffer, mimetype: 'audio/mpeg' })
+const video = await toVideo({ buffer, mimetype: 'image/webp' })
+```
+
+Pastikan binary `ffmpeg` tersedia di device/server.
+
 ## Struktur
 
 ```txt
 src/             core helper
 src/catbox.js   Catbox API wrapper
+src/converter.js Media converter helper
 src/pinterest.js Pinterest scraper
 examples/        contoh pemakaian
 data/            output lokal, tidak ikut git
