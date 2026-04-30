@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { getGithubRepo, getLatestSamehadaku, getNpmPackage, getSamehadakuStream, scrapeWebsite, searchAnime, searchGithubRepos, searchNpmPackages, toJsonResult } from '../src/index.js'
+import { getGithubRepo, getLatestSamehadaku, getNpmPackage, getSamehadakuLegacyStream, getSamehadakuStream, scrapeWebsite, searchAnime, searchGithubRepos, searchNpmPackages, toJsonResult } from '../src/index.js'
 
 const [mode, ...args] = process.argv.slice(2)
 const input = args.join(' ')
@@ -15,6 +15,7 @@ if (!mode || !input) {
 	console.log('  node examples/scrapers.js github-search whatsapp bot scraper')
 	console.log('  node examples/scrapers.js anime one piece')
 	console.log('  node examples/scrapers.js samehadaku gnosia episode 20')
+	console.log('  node examples/scrapers.js samehadaku-legacy one-piece-episode-1155')
 	console.log('  node examples/scrapers.js samehadaku-latest latest')
 	process.exit(1)
 }
@@ -40,6 +41,9 @@ switch (mode) {
 		break
 	case 'samehadaku':
 		print(await getSamehadakuStream(input))
+		break
+	case 'samehadaku-legacy':
+		print(await getSamehadakuLegacyStream(input))
 		break
 	case 'samehadaku-latest':
 		print(await getLatestSamehadaku())

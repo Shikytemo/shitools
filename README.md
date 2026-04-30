@@ -87,6 +87,7 @@ node examples/scrapers.js github Shikytemo/shitools
 node examples/scrapers.js github-search whatsapp bot scraper
 node examples/scrapers.js anime one piece
 node examples/scrapers.js samehadaku gnosia episode 20
+node examples/scrapers.js samehadaku-legacy one-piece-episode-1155
 ```
 
 Pemakaian module:
@@ -95,6 +96,7 @@ Pemakaian module:
 import {
 	getGithubRepo,
 	getNpmPackage,
+	getSamehadakuLegacyStream,
 	getSamehadakuStream,
 	scrapeWebsite,
 	searchAnime,
@@ -105,6 +107,7 @@ import {
 const page = await scrapeWebsite('https://example.com')
 const anime = await searchAnime('one piece')
 const stream = await getSamehadakuStream('gnosia episode 20')
+const legacyStream = await getSamehadakuLegacyStream('one-piece-episode-1155')
 const repo = await getGithubRepo('Shikytemo/shitools')
 const npmPackage = await getNpmPackage('@shikytemo/shitools')
 ```
@@ -149,6 +152,7 @@ Samehadaku stream scraper mengambil halaman langsung tanpa Jina Reader. Bisa inp
 
 ```js
 import {
+	getSamehadakuLegacyStream,
 	getSamehadakuStream,
 	searchSamehadaku,
 	getSamehadakuSeriesEpisodes
@@ -156,6 +160,9 @@ import {
 
 const result = await getSamehadakuStream('gnosia episode 20')
 console.log(result.episode.mirrors)
+
+const legacy = await getSamehadakuLegacyStream('one-piece-episode-1155')
+console.log(legacy.episode.mirrors.find(item => item.directVideo))
 ```
 
 ## Struktur

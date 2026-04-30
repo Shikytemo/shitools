@@ -1,6 +1,11 @@
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
 import * as cheerio from 'cheerio'
 
 const SAMEHADAKU_BASE_URL = 'https://samehadaku.co'
+const SAMEHADAKU_LEGACY_BASE_URL = 'https://v1.samehadaku.how'
+const SAMEHADAKU_LEGACY_AJAX_BASE_URL = 'https://v2.samehadaku.how'
+const execFileAsync = promisify(execFile)
 
 const defaultHeaders = {
 	accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -41,6 +46,7 @@ const isSamehadakuUrl = input => {
 
 const isEpisodeUrl = url => /episode-\d+/i.test(url) || /-episode-/i.test(url)
 const isSeriesUrl = url => /\/anime\/[^/]+\/?$/i.test(url)
+const isDirectVideoUrl = url => /\.(?:mp4|webm|mkv)(?:[?#].*)?$/i.test(url)
 
 export const getSamehadakuEpisodeNumber = text => {
 	const explicit = String(text || '').match(/\b(?:episode|eps?|ep)\s*(\d+)\b/i)
@@ -76,6 +82,46 @@ export const fetchSamehadakuHtml = async (url, options = {}) => {
 	} finally {
 		clearTimeout(timer)
 	}
+}
+
+export const fetchSamehadakuHtmlWithCurl = async (url, options = {}) => {
+	const { stdout } = await execFileAsync('curl', [
+		'-s',
+		'-L',
+		'--compressed',
+		'-A',
+		options.userAgent || defaultHeaders['user-agent'],
+		url
+	], {
+		encoding: 'utf8',
+		maxBuffer: options.maxBuffer || 20 * 1024 * 1024,
+		timeout: options.timeoutMs || 30000
+	})
+
+	return stdout
+}
+
+const postSamehadakuAjaxWithCurl = async (url, data, options = {}) => {
+	const { stdout } = await execFileAsync('curl', [
+		'-s',
+		'-L',
+		'--compressed',
+		'-A',
+		options.userAgent || defaultHeaders['user-agent'],
+		'-H',
+		'X-Requested-With: XMLHttpRequest',
+		'-H',
+		'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
+		'--data-raw',
+		data,
+		url
+	], {
+		encoding: 'utf8',
+		maxBuffer: options.maxBuffer || 10 * 1024 * 1024,
+		timeout: options.timeoutMs || 30000
+	})
+
+	return stdout
 }
 
 const extractIframeSrc = (html, options = {}) => {
@@ -195,6 +241,115 @@ export const parseLatestSamehadakuPage = (html, options = {}) => {
 
 	const limit = Number(options.limit || 20)
 	return uniqueByUrl(results).slice(0, Number.isFinite(limit) && limit > 0 ? limit : 20)
+}
+
+const slugFromSamehadakuInput = input => {
+	const text = cleanText(input)
+	if (!text) return ''
+
+	try {
+		const url = /^https?:\/\//i.test(text) ? new URL(text) : null
+		if (url) return url.pathname.split('/').filter(Boolean).at(-1) || ''
+	} catch {
+		// Fall through to plain slug handling.
+	}
+
+	return text.replace(/^\/+|\/+$/g, '')
+}
+
+const legacySlugCandidates = input => {
+	const slug = slugFromSamehadakuInput(input)
+	if (!slug) return []
+
+	return [...new Set([
+		slug,
+		slug.replace(/-subtitle-indonesia$/i, ''),
+		slug.replace(/-sub-indo$/i, '')
+	].filter(Boolean))]
+}
+
+export const parseSamehadakuLegacyEpisodePage = (html, pageUrl, options = {}) => {
+	const $ = cheerio.load(html)
+	const servers = []
+
+	$('.east_player_option').each((_, element) => {
+		const post = $(element).attr('data-post')
+		const nume = $(element).attr('data-nume')
+		const type = $(element).attr('data-type')
+		if (!post || !nume || !type) return
+
+		servers.push({
+			name: cleanText($(element).find('span').text()) || `Server ${servers.length + 1}`,
+			post,
+			nume,
+			type
+		})
+	})
+
+	return {
+		url: pageUrl,
+		title: cleanText($('h1.entry-title').text()) || cleanText($('title').text()),
+		image: absoluteUrl($('meta[property="og:image"]').attr('content') || $('.thumb img').first().attr('src'), {
+			...options,
+			baseUrl: options.legacyBaseUrl || SAMEHADAKU_LEGACY_BASE_URL
+		}),
+		servers
+	}
+}
+
+export const getSamehadakuLegacyStream = async (input, options = {}) => {
+	const candidates = legacySlugCandidates(input)
+	if (!candidates.length) throw new Error('Samehadaku legacy episode slug or URL is required')
+
+	let html = ''
+	let pageUrl = ''
+	let episode = null
+
+	for (const slug of candidates) {
+		pageUrl = `${options.legacyBaseUrl || SAMEHADAKU_LEGACY_BASE_URL}/${slug}/`
+		html = await fetchSamehadakuHtmlWithCurl(pageUrl, options)
+		episode = parseSamehadakuLegacyEpisodePage(html, pageUrl, options)
+		if (episode.servers.length) break
+	}
+
+	if (!episode?.servers?.length) {
+		return {
+			ok: false,
+			text: 'Samehadaku legacy stream not found'
+		}
+	}
+
+	const ajaxUrl = `${options.legacyAjaxBaseUrl || SAMEHADAKU_LEGACY_AJAX_BASE_URL}/wp-admin/admin-ajax.php`
+	const mirrors = []
+
+	for (const server of episode.servers) {
+		const data = new URLSearchParams({
+			action: 'player_ajax',
+			post: server.post,
+			nume: server.nume,
+			type: server.type
+		}).toString()
+		const iframeHtml = await postSamehadakuAjaxWithCurl(ajaxUrl, data, options).catch(() => '')
+		const $ = cheerio.load(iframeHtml)
+		const url = $('iframe').attr('src') || ''
+		if (!url) continue
+
+		mirrors.push({
+			name: server.name,
+			url,
+			directVideo: isDirectVideoUrl(url),
+			server
+		})
+	}
+
+	return {
+		ok: Boolean(mirrors.length),
+		...(mirrors.length ? {} : { text: 'Samehadaku legacy stream not found' }),
+		episode: {
+			...episode,
+			mirrors: uniqueByUrl(mirrors)
+		}
+	}
 }
 
 export const parseSamehadakuSeriesPage = (html, options = {}) => {
