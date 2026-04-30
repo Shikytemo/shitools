@@ -28,6 +28,21 @@ const uniqueBy = (items, key) => {
 	})
 }
 
+const limitItems = (items, limit) => Number.isFinite(limit) && limit > 0 ? items.slice(0, limit) : items
+
+const isPinterestUrl = input => {
+	try {
+		const value = /^https?:\/\//i.test(input) ? input : `https://${input}`
+		const { hostname } = new URL(value)
+		return /(^|\.)pinterest\./i.test(hostname) || hostname === 'pin.it'
+	} catch {
+		return false
+	}
+}
+
+export const getPinterestSearchUrl = query =>
+	`https://www.pinterest.com/search/pins/?q=${encodeURIComponent(String(query || '').trim())}`
+
 const normalizePinterestUrl = async (url, options = {}) => {
 	const input = String(url || '').trim()
 	if (!input) throw new Error('Pinterest URL is required')
@@ -221,14 +236,55 @@ export const scrapePinterest = async (url, options = {}) => {
 	const sourceUrl = await normalizePinterestUrl(url, options)
 	const page = await fetchPinterestPage(sourceUrl, options)
 	const parsed = parseHtml(page.html, sourceUrl)
+	const media = limitItems(parsed.media, options.limit)
 
 	return {
+		mode: 'pin',
 		source_url: sourceUrl,
 		fetched_url: page.url,
 		via: page.via,
 		title: parsed.title,
 		description: parsed.description,
-		count: parsed.media.length,
-		media: parsed.media
+		count: media.length,
+		total: parsed.media.length,
+		media
 	}
+}
+
+export const searchPinterest = async (query, options = {}) => {
+	const cleanQuery = String(query || '').trim()
+	if (!cleanQuery) throw new Error('Pinterest search query is required')
+
+	const sourceUrl = getPinterestSearchUrl(cleanQuery)
+	const page = await fetchPinterestPage(sourceUrl, {
+		direct: false,
+		...options
+	})
+	const parsed = parseHtml(page.html, sourceUrl)
+	const media = limitItems(parsed.media, options.limit || 10)
+
+	return {
+		mode: 'search',
+		query: cleanQuery,
+		source_url: sourceUrl,
+		fetched_url: page.url,
+		via: page.via,
+		title: parsed.title || `Pinterest search: ${cleanQuery}`,
+		description: parsed.description,
+		count: media.length,
+		total: parsed.media.length,
+		media
+	}
+}
+
+export const pinterest = async (input, options = {}) => {
+	const text = String(input || '').trim()
+	if (!text) throw new Error('Pinterest URL or search query is required')
+
+	const nextOptions = {
+		limit: options.limit || 10,
+		...options
+	}
+
+	return isPinterestUrl(text) ? scrapePinterest(text, nextOptions) : searchPinterest(text, nextOptions)
 }

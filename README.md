@@ -42,20 +42,21 @@ CATBOX_USER_HASH=your_user_hash
 
 ## Pinterest
 
-Scraper Pinterest reusable. Mengambil metadata dan semua media yang bisa ditemukan dari pin:
+Scraper Pinterest reusable. Bisa mode pin URL dan search keyword dalam satu API. Mengambil metadata dan media yang bisa ditemukan:
 image, video, thumbnail, `pinimg.com`, JSON-LD, script JSON, dan meta tag. Fetch utama memakai Axios + Cheerio, lalu fallback ke Jina Reader (`r.jina.ai`) untuk bypass halaman yang susah dibaca.
 
 ```sh
 npm run check
 node examples/pinterest.js https://www.pinterest.com/pin/123456789/
+node examples/pinterest.js anime girl
 ```
 
 Pemakaian module:
 
 ```js
-import { scrapePinterest } from '@shikytemo/shitools'
+import { pinterest, scrapePinterest, searchPinterest } from '@shikytemo/shitools'
 
-const result = await scrapePinterest('https://www.pinterest.com/pin/123456789/')
+const result = await pinterest('anime girl', { limit: 10 })
 console.log(result.media)
 ```
 
