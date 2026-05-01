@@ -88,6 +88,47 @@ node examples/scrapers.js github-search whatsapp bot scraper
 node examples/scrapers.js anime one piece
 node examples/scrapers.js samehadaku gnosia episode 20
 node examples/scrapers.js samehadaku-legacy one-piece-episode-1155
+node examples/scrapers.js samehadaku-latest latest
+```
+
+## Source Catalog
+
+Katalog source reusable berisi scraper internal dan 600+ public API no-auth HTTPS yang bisa dicari/filter.
+
+```sh
+node examples/sources.js list
+node examples/sources.js list Anime
+node examples/sources.js find weather
+node examples/sources.js get weather-open-meteo
+node examples/sources.js search samehadaku "one piece"
+node examples/sources.js scrape samehadaku "gnosia episode 20"
+node examples/sources.js latest samehadaku
+node examples/sources.js fetch animals-axolotl
+```
+
+Pemakaian module:
+
+```js
+import {
+	fetchSource,
+	getSource,
+	listSources,
+	scrapeSource,
+	searchSource,
+	searchSources,
+	sourceCatalog,
+	sources
+} from '@shikytemo/shitools'
+
+console.log(sourceCatalog.length)
+console.log(listSources({ category: 'Anime' }))
+console.log(searchSources('weather'))
+
+const samehadaku = await searchSource('samehadaku', 'one piece')
+const stream = await scrapeSource('samehadaku', 'gnosia episode 20')
+const metadata = getSource('weather-open-meteo')
+const publicApi = await fetchSource('animals-axolotl')
+const pin = await sources.pinterest.scrape('https://www.pinterest.com/pin/123456789/')
 ```
 
 Pemakaian module:
@@ -176,6 +217,8 @@ src/indo.js     Public Indonesia anime quote APIs
 src/pinterest.js Pinterest scraper
 src/registry.js GitHub/NPM public REST wrapper
 src/samehadaku.js Samehadaku search/episode stream scraper
+src/source-profiles.js Public source profile catalog
+src/sources.js Source catalog router/search/fetch helpers
 src/utility.js Shortlink, QR, and lightweight social helper
 src/web.js      Generic website metadata scraper
 examples/        contoh pemakaian
