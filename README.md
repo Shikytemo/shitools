@@ -176,6 +176,7 @@ src/indo.js     Public Indonesia anime quote APIs
 src/pinterest.js Pinterest scraper
 src/registry.js GitHub/NPM public REST wrapper
 src/samehadaku.js Samehadaku search/episode stream scraper
+src/utility.js Shortlink, QR, and lightweight social helper
 src/web.js      Generic website metadata scraper
 examples/        contoh pemakaian
 data/            output lokal, tidak ikut git
