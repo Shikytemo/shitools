@@ -52,10 +52,61 @@ shitools url qr "hello world"
 shitools catbox upload-file ./image.jpg
 shitools catbox create-album "My Album" abc123.jpg def456.png
 
+# Group-bot scrapers (Tier 2.5, v1.5.0+)
+shitools wikipedia "Sukarno" --lang=id
+shitools quran surah 36
+shitools sholat "Jakarta Pusat"
+shitools cuaca "Bandung"
+shitools bmkg "Sleman"
+shitools quote
+shitools animequote
+shitools fact
+shitools joke --category=Programming
+shitools meme --subreddit=wholesomememes
+shitools kateglo komputer
+shitools pypi requests
+shitools ghtrend --language=javascript --since=daily
+shitools ytsearch "lo-fi beats" --limit=5
+shitools wallhaven "cyberpunk" --limit=8
+shitools kurs USD IDR 100
+shitools ip 8.8.8.8
+shitools reddit ProgrammerHumor --sort=top --t=day
+shitools news cnn-news
+shitools ss https://example.com --width=1280 --save=ss.png
+shitools mediafire https://www.mediafire.com/file/abc/file.zip
+
 # global flags
 shitools anime top --out=top.json     # write to file instead of stdout
 shitools anime top --no-pretty        # compact JSON
 ```
+
+## Group-bot scrapers (Tier 2.5)
+
+Untuk dipakai di bot WhatsApp / Discord / Telegram. Semua public, **tanpa API key**, **tanpa login**, lewat `httpClient` shared (UA pool, retry, exponential backoff).
+
+| #   | Module           | Endpoint                     | Use case                      |
+| --- | ---------------- | ---------------------------- | ----------------------------- |
+| 1   | `wikipedia`      | id.wikipedia.org/api/rest_v1 | `.wiki <topic>`               |
+| 2   | `quran`          | equran.id v2                 | `.surah <n>`, `.ayat <s> <a>` |
+| 3   | `sholat`         | api.myquran.com v2           | `.sholat <kota>`              |
+| 4   | `weather`        | wttr.in JSON                 | `.cuaca <kota>` (global)      |
+| 5   | `bmkg`           | data.bmkg.go.id              | `.bmkg <kota>` (resmi Indo)   |
+| 6   | `quote`          | zenquotes.io                 | `.quote`                      |
+| 7   | `quote` (anime)  | animechan.io                 | `.animequote`                 |
+| 8   | `fact`           | uselessfacts.jsph.pl         | `.fact`                       |
+| 9   | `joke`           | v2.jokeapi.dev               | `.joke`                       |
+| 10  | `meme`           | meme-api.com (Reddit)        | `.meme`                       |
+| 11  | `kateglo`        | kateglo.com                  | `.kbbi <kata>`                |
+| 12  | `pypi`           | pypi.org                     | `.pypi <pkg>`                 |
+| 13  | `githubtrending` | github.com/trending          | `.ghtrend`                    |
+| 14  | `youtubesearch`  | piped public instances       | `.ytsearch <q>`               |
+| 15  | `wallhaven`      | wallhaven.cc                 | `.wp <q>` (wallpaper)         |
+| 16  | `currency`       | open.er-api.com              | `.kurs USD IDR 50`            |
+| 17  | `iplookup`       | ipwho.is                     | `.ip <addr>`                  |
+| 18  | `reddit`         | reddit.com/r/<sub>/.json     | `.reddit <sub>`               |
+| 19  | `news`           | berita-indo-api-next         | `.berita`, `.news`            |
+| 20  | `screenshot`     | s.wp.com/mshots              | `.ss <url>`                   |
+| (+) | `mediafire`      | mediafire.com HTML           | `.mediafire <url>`            |
 
 ## Example
 
