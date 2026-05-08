@@ -48,10 +48,12 @@ import {
 	getSamehadakuStream,
 	getSource,
 	detectLanguage,
+	generateImage,
 	getLyrics,
 	getTiktok,
 	getTiktokUser,
 	getTopAnime,
+	listModels,
 	latestSource,
 	listSources,
 	lyrics,
@@ -123,6 +125,16 @@ const buildRoutes = () => {
 			language: await detectLanguage(requireQuery(q, 'text')),
 			original: q.get('text')
 		}),
+
+		'GET /image': q =>
+			generateImage(requireQuery(q, 'prompt'), {
+				model: q.get('model') ?? undefined,
+				width: Number(q.get('width')) || undefined,
+				height: Number(q.get('height')) || undefined,
+				seed: q.get('seed') ? Number(q.get('seed')) : undefined,
+				enhance: q.get('enhance') === 'true' ? true : undefined
+			}),
+		'GET /image/models': () => listModels(),
 
 		'GET /tiktok': q => getTiktok(requireQuery(q, 'url')),
 		'GET /tiktok/search': q =>

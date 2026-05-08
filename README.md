@@ -285,6 +285,46 @@ GET /lyrics/search?q=<query>
 GET /lyrics/get?artist=Adele&title=Hello
 ```
 
+## AI Image (text-to-image)
+
+Wrapper untuk endpoint publik [Pollinations.ai](https://pollinations.ai) —
+free, key-less, no daily cap (per IP). `generateImage` cuma bangun URL
+hot-link (Pollinations baru render pas URL diakses), `fetchImage`
+download bytes-nya buat disimpen / dikirim balik via Telegram/WA.
+
+```js
+import { generateImage, fetchImage, listModels } from '@shikytemo/shitools'
+import { writeFile } from 'node:fs/promises'
+
+const { url } = await generateImage('a cyberpunk corgi', {
+	model: 'flux',
+	width: 1024,
+	height: 1024
+})
+console.log(url) // hot-link, no upstream call yet
+
+const bytes = await fetchImage('mecha samurai, ukiyo-e style', { seed: 42 })
+await writeFile('out.jpg', bytes)
+
+const models = await listModels() // ['flux', 'turbo', ...]
+```
+
+CLI:
+
+```sh
+shitools image "a cyberpunk corgi"
+shitools image "mecha samurai" --model=flux-anime --width=512 --height=768 --seed=42
+shitools image "anime girl" --save=./out.jpg
+shitools image-models
+```
+
+REST:
+
+```
+GET /image?prompt=a%20cyberpunk%20corgi&model=flux&width=1024&height=1024
+GET /image/models
+```
+
 ## Translate
 
 Wrapper untuk endpoint publik Google Translate (`translate.googleapis.com`).
@@ -480,6 +520,7 @@ sebelum commit.
 ```txt
 bin/shitools.js          unified CLI entry (subcommand dispatch)
 src/                     core helper
+src/aiimage.js           Free Pollinations text-to-image generator
 src/anime.js             Jikan anime/manga REST wrapper
 src/cache.js             memoryStore + withCache memoizer
 src/catbox.js            Catbox API wrapper

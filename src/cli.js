@@ -14,6 +14,33 @@ import { writeFileSync } from 'node:fs'
 
 import * as shitools from './index.js'
 
+const IMAGE_FLAG_KEYS = [
+	'model',
+	'width',
+	'height',
+	'seed',
+	'enhance',
+	'nologo',
+	'private',
+	'referrer'
+]
+const pickImageOptions = flags => {
+	const out = {}
+	for (const key of IMAGE_FLAG_KEYS) {
+		if (flags[key] === undefined) continue
+		const value = flags[key]
+		if (key === 'width' || key === 'height' || key === 'seed') {
+			const n = Number(value)
+			if (Number.isFinite(n)) out[key] = n
+		} else if (key === 'enhance' || key === 'nologo' || key === 'private') {
+			out[key] = value === true || value === 'true'
+		} else {
+			out[key] = String(value)
+		}
+	}
+	return out
+}
+
 /**
  * Result of {@link parseArgv}.
  *
@@ -155,6 +182,10 @@ export const renderHelp = () =>
 		'  translate <text> [--to=id] [--from=auto]   Free Google Translate proxy',
 		'  detect <text>                       Detect source language code',
 		'',
+		'  image <prompt> [--model=flux] [--width=N] [--height=N] [--seed=N] [--save=path]',
+		'                                      Free Pollinations text-to-image (URL or saved bytes)',
+		'  image-models                        List Pollinations models',
+		'',
 		'  tiktok <url-or-query> [--limit=N]   Smart dispatch (URL → video, else search)',
 		'  tiktok video <url>                  Resolve to no-watermark MP4 + metadata',
 		'  tiktok search <query> [--limit=N]   Keyword feed search',
@@ -192,7 +223,7 @@ const requirePositional = (rest, index, label) => {
 	return rest[index]
 }
 
-const buildHandlers = deps => ({
+const buildHandlers = (deps, io) => ({
 	sources: async rest => {
 		const [sub, ...args] = rest
 		switch (sub) {
@@ -345,6 +376,20 @@ const buildHandlers = deps => ({
 		return { language: lang, original: text }
 	},
 
+	image: async (rest, flags) => {
+		const prompt = rest.join(' ').trim()
+		if (!prompt) throw new Error('image requires <prompt>')
+		const opts = pickImageOptions(flags)
+		if (flags.save) {
+			const bytes = await deps.fetchImage(prompt, opts)
+			io.writeFile(String(flags.save), Buffer.from(bytes))
+			return { saved: String(flags.save), prompt, bytes: bytes.length }
+		}
+		return deps.generateImage(prompt, opts)
+	},
+
+	'image-models': async () => deps.listModels(),
+
 	tiktok: async (rest, flags) => {
 		const [sub, ...args] = rest
 		const limit = Number(flags.limit) > 0 ? Number(flags.limit) : 10
@@ -427,7 +472,7 @@ export const runCli = async (argv = [], options = {}) => {
 	}
 
 	const [command, ...rest] = positional
-	const handlers = buildHandlers(deps)
+	const handlers = buildHandlers(deps, io)
 	const handler = handlers[command]
 	if (!handler) {
 		io.stderr(`Unknown command: ${command}`)
