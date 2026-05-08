@@ -248,6 +248,47 @@ const legacy = await getSamehadakuLegacyStream('one-piece-episode-1155')
 console.log(legacy.episode.mirrors.find(item => item.directVideo))
 ```
 
+## TikTok
+
+Native TikTok scraper via TikWM — no yt-dlp / Termux binaries / login required.
+Returns no-watermark MP4 URL + metadata.
+
+```js
+import { tiktok, getTiktok, searchTiktok, getTiktokUser } from '@shikytemo/shitools'
+
+// resolve a video URL → no-watermark MP4
+const video = await getTiktok('https://www.tiktok.com/@khaby.lame/video/7137423965982858498')
+console.log(video.noWatermarkUrl, video.duration, video.author.username)
+
+// keyword search
+const { videos, cursor, hasMore } = await searchTiktok('lucu kucing', { limit: 5 })
+
+// user profile + stats
+const user = await getTiktokUser('@khaby.lame')
+console.log(user.stats.followers)
+
+// smart dispatch — URL → video, else search
+await tiktok('https://vm.tiktok.com/ZSNFRtUJj/')
+await tiktok('axolotl', { limit: 3 })
+```
+
+CLI:
+
+```sh
+shitools tiktok video https://vm.tiktok.com/ZSNFRtUJj/
+shitools tiktok search "lucu kucing" --limit=5
+shitools tiktok user "@khaby.lame"
+shitools tiktok https://vm.tiktok.com/ZSNFRtUJj/   # smart dispatch
+```
+
+REST:
+
+```
+GET /tiktok?url=<encoded-tiktok-url>
+GET /tiktok/search?q=<keyword>&limit=10
+GET /tiktok/user?username=khaby.lame
+```
+
 ## Cache
 
 Memoize scraper calls dengan TTL biar gak hammer upstream:
@@ -382,6 +423,7 @@ src/registry.js          GitHub/NPM public REST wrapper
 src/samehadaku.js        Samehadaku search/episode stream scraper
 src/source-profiles.js   Public source profile catalog (auto-generated)
 src/sources.js           Source catalog router/search/fetch helpers
+src/tiktok.js            TikTok no-watermark / search / profile scraper (TikWM)
 src/utility.js           Shortlink, QR, and lightweight social helper
 src/web.js               Generic website metadata scraper
 examples/                contoh pemakaian + REST server + Dockerfile + fly.toml

@@ -148,6 +148,11 @@ export const renderHelp = () =>
 		'  url qr <text>',
 		'  social <url>                        Resolve TikTok / Instagram / YouTube via yt-dlp',
 		'',
+		'  tiktok <url-or-query> [--limit=N]   Smart dispatch (URL → video, else search)',
+		'  tiktok video <url>                  Resolve to no-watermark MP4 + metadata',
+		'  tiktok search <query> [--limit=N]   Keyword feed search',
+		'  tiktok user <@username>             Profile + stats',
+		'',
 		'  catbox upload-file <path>',
 		'  catbox upload-url <url>',
 		'  catbox delete-files <name...>',
@@ -294,6 +299,24 @@ const buildHandlers = deps => ({
 		const input = rest.join(' ').trim()
 		if (!input) throw new Error('social requires <url>')
 		return deps.resolveSocialDownloader({ input })
+	},
+
+	tiktok: async (rest, flags) => {
+		const [sub, ...args] = rest
+		const limit = Number(flags.limit) > 0 ? Number(flags.limit) : 10
+		switch (sub) {
+			case 'video':
+				return deps.getTiktok(requirePositional(args, 0, 'url'))
+			case 'search':
+				return deps.searchTiktok(args.join(' '), { limit })
+			case 'user':
+				return deps.getTiktokUser(requirePositional(args, 0, 'username'))
+			default: {
+				const input = rest.join(' ').trim()
+				if (!input) throw new Error('tiktok requires <url-or-query> or a subcommand')
+				return deps.tiktok(input, { limit })
+			}
+		}
 	},
 
 	catbox: async rest => {
