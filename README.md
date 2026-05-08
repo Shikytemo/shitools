@@ -108,6 +108,37 @@ Untuk dipakai di bot WhatsApp / Discord / Telegram. Semua public, **tanpa API ke
 | 20  | `screenshot`     | s.wp.com/mshots              | `.ss <url>`                   |
 | (+) | `mediafire`      | mediafire.com HTML           | `.mediafire <url>`            |
 
+## Group-bot scrapers (Tier 2.6, v1.6.0+)
+
+Tambahan 10 modul terbaru. Semua public, **tanpa API key**, **tanpa login**, lewat `httpClient` shared.
+
+| #   | Module            | Endpoint                       | Use case                      |
+| --- | ----------------- | ------------------------------ | ----------------------------- |
+| 1   | `npmstalk`        | registry.npmjs.org             | `.npmstalk <package>`         |
+| 2   | `githubprofile`   | api.github.com (public)        | `.gh <user>`, `.ghprofile`    |
+| 3   | `igstalk`         | dumpoir.com                    | `.igstalk <user>`             |
+| 4   | `tiktokstalk`     | tikwm.com user info            | `.ttstalk <user>`             |
+| 5   | `shortlink`       | tinyurl.com api-create.php     | `.short <url>`                |
+| 6   | `qrcode`          | api.qrserver.com               | `.qr <text>`, `.qrread <url>` |
+| 7   | `urbandictionary` | api.urbandictionary.com        | `.urban <term>`               |
+| 8   | `waifu`           | api.waifu.pics                 | `.waifu [category]`           |
+| 9   | `sfile`           | sfile.mobi (HTML)              | `.sfile <q-or-url>`           |
+| 10  | `spotifydl`       | api.fabdl.com (Spotify mirror) | `.spotifydl <url>`            |
+
+```sh
+shitools npmstalk axios
+shitools githubstalk Shikytemo --repos=10
+shitools igstalk cristiano
+shitools tiktokstalk khaby.lame
+shitools short https://example.com/very/long/path
+shitools qr "https://shikytemo.my.id" --size=400
+shitools qr-decode https://example.com/some-qr.png
+shitools urban rizz --limit=3
+shitools waifu neko
+shitools sfile "whatsapp mod"
+shitools spotifydl "https://open.spotify.com/track/2takcwOaAZWiXQijPHIx7B"
+```
+
 ## Example
 
 ```sh
