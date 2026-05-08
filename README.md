@@ -285,6 +285,39 @@ GET /lyrics/search?q=<query>
 GET /lyrics/get?artist=Adele&title=Hello
 ```
 
+## Translate
+
+Wrapper untuk endpoint publik Google Translate (`translate.googleapis.com`).
+Tanpa API key, tapi rate-limited per IP — bungkus `withCache` kalau dipanggil
+sering.
+
+```js
+import { translate, detectLanguage } from '@shikytemo/shitools'
+
+const out = await translate('Hello world', { to: 'id' })
+console.log(out.text) // "Halo dunia"
+console.log(out.sourceLang) // "en" (auto-detected)
+
+const lang = await detectLanguage('Selamat pagi semua')
+console.log(lang) // "id"
+```
+
+CLI:
+
+```sh
+shitools translate "Hello world"                       # default to=id
+shitools translate "Halo dunia" --to=ja
+shitools translate "Bonjour" --from=fr --to=id
+shitools detect "selamat malam"
+```
+
+REST:
+
+```
+GET /translate?text=Hello%20world&to=id
+GET /detect?text=Selamat%20pagi
+```
+
 ## TikTok
 
 Native TikTok scraper via TikWM — no yt-dlp / Termux binaries / login required.
@@ -462,6 +495,7 @@ src/samehadaku.js        Samehadaku search/episode stream scraper
 src/source-profiles.js   Public source profile catalog (auto-generated)
 src/sources.js           Source catalog router/search/fetch helpers
 src/tiktok.js            TikTok no-watermark / search / profile scraper (TikWM)
+src/translate.js         Free Google Translate proxy + language detection
 src/utility.js           Shortlink, QR, and lightweight social helper
 src/web.js               Generic website metadata scraper
 examples/                contoh pemakaian + REST server + Dockerfile + fly.toml

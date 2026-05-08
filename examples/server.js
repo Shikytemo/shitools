@@ -47,6 +47,7 @@ import {
 	getRandomKatanimeQuotes,
 	getSamehadakuStream,
 	getSource,
+	detectLanguage,
 	getLyrics,
 	getTiktok,
 	getTiktokUser,
@@ -66,7 +67,8 @@ import {
 	searchSources,
 	searchLyrics,
 	searchTiktok,
-	shortenUrl
+	shortenUrl,
+	translate
 } from '../src/index.js'
 
 const PORT = Number(process.env.PORT) || 3000
@@ -111,6 +113,16 @@ const buildRoutes = () => {
 		'GET /lyrics': q => lyrics(requireQuery(q, 'q')),
 		'GET /lyrics/search': q => searchLyrics(requireQuery(q, 'q')),
 		'GET /lyrics/get': q => getLyrics(requireQuery(q, 'artist'), requireQuery(q, 'title')),
+
+		'GET /translate': q =>
+			translate(requireQuery(q, 'text'), {
+				to: q.get('to') ?? undefined,
+				from: q.get('from') ?? undefined
+			}),
+		'GET /detect': async q => ({
+			language: await detectLanguage(requireQuery(q, 'text')),
+			original: q.get('text')
+		}),
 
 		'GET /tiktok': q => getTiktok(requireQuery(q, 'url')),
 		'GET /tiktok/search': q =>

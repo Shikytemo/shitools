@@ -152,6 +152,9 @@ export const renderHelp = () =>
 		'  lyrics search <query> [--limit=N]   Genius search hits',
 		'  lyrics get "<artist>" "<title>"     Direct lyrics.ovh fetch (or use --artist=X --title=Y)',
 		'',
+		'  translate <text> [--to=id] [--from=auto]   Free Google Translate proxy',
+		'  detect <text>                       Detect source language code',
+		'',
 		'  tiktok <url-or-query> [--limit=N]   Smart dispatch (URL → video, else search)',
 		'  tiktok video <url>                  Resolve to no-watermark MP4 + metadata',
 		'  tiktok search <query> [--limit=N]   Keyword feed search',
@@ -325,6 +328,21 @@ const buildHandlers = deps => ({
 				return deps.lyrics(input)
 			}
 		}
+	},
+
+	translate: async (rest, flags) => {
+		const text = rest.join(' ').trim()
+		if (!text) throw new Error('translate requires <text>')
+		const to = flags.to ? String(flags.to) : undefined
+		const from = flags.from ? String(flags.from) : undefined
+		return deps.translate(text, { from, to })
+	},
+
+	detect: async rest => {
+		const text = rest.join(' ').trim()
+		if (!text) throw new Error('detect requires <text>')
+		const lang = await deps.detectLanguage(text)
+		return { language: lang, original: text }
 	},
 
 	tiktok: async (rest, flags) => {
