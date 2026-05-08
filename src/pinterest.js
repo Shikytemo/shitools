@@ -5,7 +5,9 @@ export const JINA_READER_BASE = 'https://r.jina.ai/http://'
 
 const pinterestHeaders = {
 	accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-	'user-agent': process.env.USER_AGENT || 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36'
+	'user-agent':
+		process.env.USER_AGENT ||
+		'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36'
 }
 
 const mediaUrlRegex = /https?:\\?\/\\?\/(?:i|v)\.pinimg\.com\/[^"'\\\s<>)]+/gi
@@ -30,7 +32,8 @@ const uniqueBy = (items, key) => {
 
 const uniqueValues = items => [...new Set(items.filter(Boolean))]
 
-const limitItems = (items, limit) => Number.isFinite(limit) && limit > 0 ? items.slice(0, limit) : items
+const limitItems = (items, limit) =>
+	Number.isFinite(limit) && limit > 0 ? items.slice(0, limit) : items
 
 const pinterestImageSizePattern = /^(?:originals|\d+x(?:\d+)?(?:_[a-z]+)?)$/i
 const pinterestPreferredImageSize = '1200x'
@@ -69,11 +72,13 @@ export const getPinterestImageVariants = url => {
 		if (!parts.length || !pinterestImageSizePattern.test(parts[0])) return [clean]
 
 		return uniqueValues(
-			pinterestFallbackImageSizes.map(size => {
-				const next = new URL(clean)
-				next.pathname = `/${[size, ...parts.slice(1)].join('/')}`
-				return next.toString()
-			}).concat(clean)
+			pinterestFallbackImageSizes
+				.map(size => {
+					const next = new URL(clean)
+					next.pathname = `/${[size, ...parts.slice(1)].join('/')}`
+					return next.toString()
+				})
+				.concat(clean)
 		)
 	} catch {
 		return [clean]
@@ -170,16 +175,18 @@ const normalizePinterestUrl = async (url, options = {}) => {
 	const parsed = new URL(withProtocol)
 
 	if (parsed.hostname === 'pin.it' && options.resolveShortUrl !== false) {
-		const response = await axios.get(withProtocol, {
-			headers: pinterestHeaders,
-			maxRedirects: 0,
-			validateStatus: status => status >= 200 && status < 400,
-			timeout: options.timeoutMs || 30000
-		}).catch(error => {
-			const location = error.response?.headers?.location
-			if (location) return { headers: { location } }
-			throw error
-		})
+		const response = await axios
+			.get(withProtocol, {
+				headers: pinterestHeaders,
+				maxRedirects: 0,
+				validateStatus: status => status >= 200 && status < 400,
+				timeout: options.timeoutMs || 30000
+			})
+			.catch(error => {
+				const location = error.response?.headers?.location
+				if (location) return { headers: { location } }
+				throw error
+			})
 		const location = response.headers?.location
 		if (location) return new URL(location, withProtocol).toString()
 	}
@@ -239,9 +246,7 @@ const fetchPinterestPage = async (url, options = {}) => {
 }
 
 const getMeta = ($, name) =>
-	$(`meta[property="${name}"]`).attr('content') ||
-	$(`meta[name="${name}"]`).attr('content') ||
-	''
+	$(`meta[property="${name}"]`).attr('content') || $(`meta[name="${name}"]`).attr('content') || ''
 
 const pushMedia = (items, url, type = 'unknown', source = 'unknown', extra = {}) => {
 	const clean = cleanupUrl(url)
@@ -250,9 +255,12 @@ const pushMedia = (items, url, type = 'unknown', source = 'unknown', extra = {})
 	if (!['i.pinimg.com', 'v.pinimg.com'].includes(hostname)) return
 
 	const lowered = clean.toLowerCase()
-	const guessedType = type === 'unknown'
-		? lowered.includes('.mp4') || lowered.includes('/videos/') || lowered.includes('v.pinimg.com') ? 'video' : 'image'
-		: type
+	const guessedType =
+		type === 'unknown'
+			? lowered.includes('.mp4') || lowered.includes('/videos/') || lowered.includes('v.pinimg.com')
+				? 'video'
+				: 'image'
+			: type
 	const hdUrl = guessedType === 'image' ? toPinterestHighResUrl(clean) : clean
 	const fallbackUrls = guessedType === 'image' ? getPinterestImageVariants(clean) : [clean]
 
@@ -291,22 +299,25 @@ const walkJson = (value, items, source) => {
 }
 
 const parseJsonScripts = ($, items) => {
-	$('script[type="application/ld+json"], script#__PWS_DATA__, script[data-test-id], script').each((_, element) => {
-		const raw = $(element).text().trim()
-		if (!raw || !/[{[]/.test(raw) || !/pinimg|ImageObject|VideoObject|contentUrl/i.test(raw)) return
+	$('script[type="application/ld+json"], script#__PWS_DATA__, script[data-test-id], script').each(
+		(_, element) => {
+			const raw = $(element).text().trim()
+			if (!raw || !/[{[]/.test(raw) || !/pinimg|ImageObject|VideoObject|contentUrl/i.test(raw))
+				return
 
-		const candidates = [raw]
-		const jsonMatches = raw.match(/\{[\s\S]*\}|\[[\s\S]*\]/g) || []
-		candidates.push(...jsonMatches)
+			const candidates = [raw]
+			const jsonMatches = raw.match(/\{[\s\S]*\}|\[[\s\S]*\]/g) || []
+			candidates.push(...jsonMatches)
 
-		for (const candidate of candidates) {
-			try {
-				walkJson(JSON.parse(candidate), items, 'json')
-			} catch {
-				// Ignore non-JSON script chunks.
+			for (const candidate of candidates) {
+				try {
+					walkJson(JSON.parse(candidate), items, 'json')
+				} catch {
+					// Ignore non-JSON script chunks.
+				}
 			}
 		}
-	})
+	)
 }
 
 const parseHtml = (html, pageUrl) => {
@@ -409,5 +420,7 @@ export const pinterest = async (input, options = {}) => {
 		...options
 	}
 
-	return isPinterestUrl(text) ? scrapePinterest(text, nextOptions) : searchPinterest(text, nextOptions)
+	return isPinterestUrl(text)
+		? scrapePinterest(text, nextOptions)
+		: searchPinterest(text, nextOptions)
 }

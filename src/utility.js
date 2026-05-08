@@ -92,9 +92,7 @@ export const readQrBuffer = async (buffer, options = {}) => {
 
 	const data = await response.json()
 	const text = data?.[0]?.symbol?.[0]?.data || ''
-	return text
-		? { ok: true, text }
-		: { ok: false, text: 'QR not readable' }
+	return text ? { ok: true, text } : { ok: false, text: 'QR not readable' }
 }
 
 const downloadAliases = {
@@ -126,7 +124,9 @@ const execFileAsync = (file, args, options = {}) =>
 	})
 
 const hasCommand = async command => {
-	const paths = String(process.env.PATH || '').split(delimiter).filter(Boolean)
+	const paths = String(process.env.PATH || '')
+		.split(delimiter)
+		.filter(Boolean)
 
 	for (const dir of paths) {
 		try {

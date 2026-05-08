@@ -14,7 +14,10 @@ const absoluteUrl = (value, baseUrl) => {
 	}
 }
 
-const cleanText = value => String(value || '').replace(/\s+/g, ' ').trim()
+const cleanText = value =>
+	String(value || '')
+		.replace(/\s+/g, ' ')
+		.trim()
 
 const firstAttr = ($, selectors, attr = 'content') => {
 	for (const selector of selectors) {
@@ -40,14 +43,38 @@ const getJsonLd = $ =>
 		})
 
 export const scrapeWebsite = async (url, options = {}) => {
-	const html = options.html || await fetchText(url, options)
+	const html = options.html || (await fetchText(url, options))
 	const $ = cheerio.load(html)
 	const baseUrl = $('base[href]').first().attr('href') || url
-	const title = cleanText(firstAttr($, ['meta[property="og:title"]', 'meta[name="twitter:title"]']) || $('title').first().text() || $('h1').first().text())
-	const description = cleanText(firstAttr($, ['meta[name="description"]', 'meta[property="og:description"]', 'meta[name="twitter:description"]']))
-	const canonicalUrl = absoluteUrl($('link[rel="canonical"]').first().attr('href') || firstAttr($, ['meta[property="og:url"]']), baseUrl)
-	const image = absoluteUrl(firstAttr($, ['meta[property="og:image"]', 'meta[name="twitter:image"]', 'meta[itemprop="image"]']), baseUrl)
-	const icon = absoluteUrl($('link[rel~="icon"]').first().attr('href') || $('link[rel="apple-touch-icon"]').first().attr('href'), baseUrl)
+	const title = cleanText(
+		firstAttr($, ['meta[property="og:title"]', 'meta[name="twitter:title"]']) ||
+			$('title').first().text() ||
+			$('h1').first().text()
+	)
+	const description = cleanText(
+		firstAttr($, [
+			'meta[name="description"]',
+			'meta[property="og:description"]',
+			'meta[name="twitter:description"]'
+		])
+	)
+	const canonicalUrl = absoluteUrl(
+		$('link[rel="canonical"]').first().attr('href') || firstAttr($, ['meta[property="og:url"]']),
+		baseUrl
+	)
+	const image = absoluteUrl(
+		firstAttr($, [
+			'meta[property="og:image"]',
+			'meta[name="twitter:image"]',
+			'meta[itemprop="image"]'
+		]),
+		baseUrl
+	)
+	const icon = absoluteUrl(
+		$('link[rel~="icon"]').first().attr('href') ||
+			$('link[rel="apple-touch-icon"]').first().attr('href'),
+		baseUrl
+	)
 	const links = uniq(
 		$('a[href]')
 			.toArray()

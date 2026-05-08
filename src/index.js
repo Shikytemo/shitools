@@ -32,6 +32,8 @@ export const toJsonResult = data => JSON.stringify(data, null, 2)
 export * from './anime.js'
 export * from './catbox.js'
 export * from './converter.js'
+export * from './errors.js'
+export * from './http.js'
 export * from './indo.js'
 export * from './pinterest.js'
 export * from './registry.js'

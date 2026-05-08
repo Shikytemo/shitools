@@ -12,9 +12,16 @@ const defaultHeaders = {
 	'user-agent': process.env.USER_AGENT || 'Shitools/1.0'
 }
 
-const baseUrl = options => String(options.baseUrl || process.env.SAMEHADAKU_BASE_URL || SAMEHADAKU_BASE_URL).replace(/\/+$/, '')
+const baseUrl = options =>
+	String(options.baseUrl || process.env.SAMEHADAKU_BASE_URL || SAMEHADAKU_BASE_URL).replace(
+		/\/+$/,
+		''
+	)
 
-const cleanText = value => String(value || '').replace(/\s+/g, ' ').trim()
+const cleanText = value =>
+	String(value || '')
+		.replace(/\s+/g, ' ')
+		.trim()
 
 const absoluteUrl = (url, options = {}) => {
 	if (!url) return ''
@@ -57,7 +64,7 @@ export const getSamehadakuEpisodeNumber = text => {
 }
 
 const seriesSearchQuery = text =>
-	cleanText(String(text || '').replace(/\b(?:episode|eps?|ep)\s*\d+\b/ig, ''))
+	cleanText(String(text || '').replace(/\b(?:episode|eps?|ep)\s*\d+\b/gi, ''))
 
 export const fetchSamehadakuHtml = async (url, options = {}) => {
 	const timeoutMs = Number(options.timeoutMs || process.env.REQUEST_TIMEOUT_MS || 30000)
@@ -85,41 +92,42 @@ export const fetchSamehadakuHtml = async (url, options = {}) => {
 }
 
 export const fetchSamehadakuHtmlWithCurl = async (url, options = {}) => {
-	const { stdout } = await execFileAsync('curl', [
-		'-s',
-		'-L',
-		'--compressed',
-		'-A',
-		options.userAgent || defaultHeaders['user-agent'],
-		url
-	], {
-		encoding: 'utf8',
-		maxBuffer: options.maxBuffer || 20 * 1024 * 1024,
-		timeout: options.timeoutMs || 30000
-	})
+	const { stdout } = await execFileAsync(
+		'curl',
+		['-s', '-L', '--compressed', '-A', options.userAgent || defaultHeaders['user-agent'], url],
+		{
+			encoding: 'utf8',
+			maxBuffer: options.maxBuffer || 20 * 1024 * 1024,
+			timeout: options.timeoutMs || 30000
+		}
+	)
 
 	return stdout
 }
 
 const postSamehadakuAjaxWithCurl = async (url, data, options = {}) => {
-	const { stdout } = await execFileAsync('curl', [
-		'-s',
-		'-L',
-		'--compressed',
-		'-A',
-		options.userAgent || defaultHeaders['user-agent'],
-		'-H',
-		'X-Requested-With: XMLHttpRequest',
-		'-H',
-		'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
-		'--data-raw',
-		data,
-		url
-	], {
-		encoding: 'utf8',
-		maxBuffer: options.maxBuffer || 10 * 1024 * 1024,
-		timeout: options.timeoutMs || 30000
-	})
+	const { stdout } = await execFileAsync(
+		'curl',
+		[
+			'-s',
+			'-L',
+			'--compressed',
+			'-A',
+			options.userAgent || defaultHeaders['user-agent'],
+			'-H',
+			'X-Requested-With: XMLHttpRequest',
+			'-H',
+			'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
+			'--data-raw',
+			data,
+			url
+		],
+		{
+			encoding: 'utf8',
+			maxBuffer: options.maxBuffer || 10 * 1024 * 1024,
+			timeout: options.timeoutMs || 30000
+		}
+	)
 
 	return stdout
 }
@@ -261,11 +269,13 @@ const legacySlugCandidates = input => {
 	const slug = slugFromSamehadakuInput(input)
 	if (!slug) return []
 
-	return [...new Set([
-		slug,
-		slug.replace(/-subtitle-indonesia$/i, ''),
-		slug.replace(/-sub-indo$/i, '')
-	].filter(Boolean))]
+	return [
+		...new Set(
+			[slug, slug.replace(/-subtitle-indonesia$/i, ''), slug.replace(/-sub-indo$/i, '')].filter(
+				Boolean
+			)
+		)
+	]
 }
 
 export const parseSamehadakuLegacyEpisodePage = (html, pageUrl, options = {}) => {
@@ -289,10 +299,13 @@ export const parseSamehadakuLegacyEpisodePage = (html, pageUrl, options = {}) =>
 	return {
 		url: pageUrl,
 		title: cleanText($('h1.entry-title').text()) || cleanText($('title').text()),
-		image: absoluteUrl($('meta[property="og:image"]').attr('content') || $('.thumb img').first().attr('src'), {
-			...options,
-			baseUrl: options.legacyBaseUrl || SAMEHADAKU_LEGACY_BASE_URL
-		}),
+		image: absoluteUrl(
+			$('meta[property="og:image"]').attr('content') || $('.thumb img').first().attr('src'),
+			{
+				...options,
+				baseUrl: options.legacyBaseUrl || SAMEHADAKU_LEGACY_BASE_URL
+			}
+		),
 		servers
 	}
 }
@@ -439,7 +452,11 @@ export const getSamehadakuStream = async (input, options = {}) => {
 		if (directEpisode) {
 			episodeUrl = directEpisode.url
 		} else if (series) {
-			const resolved = await resolveSamehadakuEpisode({ ...options, seriesUrl: series.url, episodeNumber })
+			const resolved = await resolveSamehadakuEpisode({
+				...options,
+				seriesUrl: series.url,
+				episodeNumber
+			})
 			episodeUrl = resolved.episodeUrl
 			episodes = resolved.episodes
 		}

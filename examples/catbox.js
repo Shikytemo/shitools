@@ -60,7 +60,8 @@ const run = async () => {
 			return addToAlbum(args[0], args.slice(1))
 
 		case 'edit-album':
-			if (!args[0] || !args[1]) throw new Error('edit-album requires <album-short> <title> <filename...>')
+			if (!args[0] || !args[1])
+				throw new Error('edit-album requires <album-short> <title> <filename...>')
 			return editAlbum({
 				short: args[0],
 				title: args[1],

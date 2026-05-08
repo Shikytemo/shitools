@@ -65,7 +65,9 @@ export const uploadUrl = async (url, options = {}) => {
 		type: 'url',
 		source: url,
 		url: resultUrl,
-		filename: resultUrl.startsWith(CATBOX_FILE_HOST) ? resultUrl.slice(CATBOX_FILE_HOST.length) : resultUrl
+		filename: resultUrl.startsWith(CATBOX_FILE_HOST)
+			? resultUrl.slice(CATBOX_FILE_HOST.length)
+			: resultUrl
 	}
 }
 
@@ -105,7 +107,10 @@ export const addToAlbum = async (short, files, options = {}) => {
 	}
 }
 
-export const editAlbum = async ({ short, title = '', description = '', files = [] }, options = {}) => {
+export const editAlbum = async (
+	{ short, title = '', description = '', files = [] },
+	options = {}
+) => {
 	const form = createForm('editalbum', options.userHash)
 	form.append('short', short)
 	form.append('title', title)
