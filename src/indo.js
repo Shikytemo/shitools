@@ -37,7 +37,10 @@ export const getRandomKatanimeQuotes = async (options = {}) => {
 }
 
 export const getKatanimeAnimeList = async (options = {}) => {
-	const data = await requestJson(`${options.baseUrl || KATANIME_BASE_URL}/api/getlistanime`, options)
+	const data = await requestJson(
+		`${options.baseUrl || KATANIME_BASE_URL}/api/getlistanime`,
+		options
+	)
 	const values = Array.isArray(data) ? data : data.result || data.data || data.results || []
 	return Array.isArray(values) ? values : []
 }
@@ -47,7 +50,10 @@ export const getKatanimeQuotesByAnime = async (anime, options = {}) => {
 		anime,
 		page: String(options.page || 1)
 	})
-	const data = await requestJson(`${options.baseUrl || KATANIME_BASE_URL}/api/getbyanime?${params}`, options)
+	const data = await requestJson(
+		`${options.baseUrl || KATANIME_BASE_URL}/api/getbyanime?${params}`,
+		options
+	)
 	return {
 		anime,
 		page: Number(options.page || 1),
@@ -60,7 +66,10 @@ export const searchKatanimeQuotes = async (kata, options = {}) => {
 		kata,
 		page: String(options.page || 1)
 	})
-	const data = await requestJson(`${options.baseUrl || KATANIME_BASE_URL}/api/carikata?${params}`, options)
+	const data = await requestJson(
+		`${options.baseUrl || KATANIME_BASE_URL}/api/carikata?${params}`,
+		options
+	)
 	return {
 		query: kata,
 		page: Number(options.page || 1),

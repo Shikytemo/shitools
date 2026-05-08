@@ -1,5 +1,14 @@
 #!/usr/bin/env node
-import { fetchSource, getSource, latestSource, listSources, scrapeSource, searchSource, searchSources, toJsonResult } from '../src/index.js'
+import {
+	fetchSource,
+	getSource,
+	latestSource,
+	listSources,
+	scrapeSource,
+	searchSource,
+	searchSources,
+	toJsonResult
+} from '../src/index.js'
 
 const [mode, ...args] = process.argv.slice(2)
 const print = data => console.log(toJsonResult(data))

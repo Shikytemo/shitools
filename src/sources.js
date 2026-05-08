@@ -4,7 +4,10 @@ import { getLatestSamehadaku, getSamehadakuStream, searchSamehadaku } from './sa
 import { sourceProfiles } from './source-profiles.js'
 import { scrapeWebsite } from './web.js'
 
-const clean = value => String(value || '').replace(/\s+/g, ' ').trim()
+const clean = value =>
+	String(value || '')
+		.replace(/\s+/g, ' ')
+		.trim()
 
 const builtInSources = [
 	{
@@ -72,15 +75,29 @@ export const sourceCatalog = [
 ]
 
 const matchesFilter = (profile, filter = {}) => {
-	if (filter.category && clean(profile.category).toLowerCase() !== clean(filter.category).toLowerCase()) return false
+	if (
+		filter.category &&
+		clean(profile.category).toLowerCase() !== clean(filter.category).toLowerCase()
+	)
+		return false
 	if (filter.type && profile.type !== filter.type) return false
 	if (filter.auth && profile.auth !== filter.auth) return false
 	if (filter.https !== undefined && Boolean(profile.https) !== Boolean(filter.https)) return false
-	if (filter.tag && !(profile.tags || []).some(tag => tag.toLowerCase() === clean(filter.tag).toLowerCase())) return false
+	if (
+		filter.tag &&
+		!(profile.tags || []).some(tag => tag.toLowerCase() === clean(filter.tag).toLowerCase())
+	)
+		return false
 
 	const query = clean(filter.query || filter.q).toLowerCase()
 	if (query) {
-		const haystack = [profile.id, profile.name, profile.category, profile.description, ...(profile.tags || [])]
+		const haystack = [
+			profile.id,
+			profile.name,
+			profile.category,
+			profile.description,
+			...(profile.tags || [])
+		]
 			.join(' ')
 			.toLowerCase()
 		if (!haystack.includes(query)) return false
@@ -148,7 +165,8 @@ export const fetchSource = async (sourceId, options = {}) => {
 			...(options.headers || {})
 		}
 	})
-	if (!response.ok) throw new Error(`Source request failed ${response.status} ${response.statusText}`)
+	if (!response.ok)
+		throw new Error(`Source request failed ${response.status} ${response.statusText}`)
 
 	const contentType = response.headers.get('content-type') || ''
 	if (contentType.includes('application/json')) {

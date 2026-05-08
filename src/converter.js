@@ -26,7 +26,9 @@ const normalizeBuffer = input => {
 }
 
 export const extFromMime = mimetype => {
-	const clean = String(mimetype || '').split(';')[0].trim()
+	const clean = String(mimetype || '')
+		.split(';')[0]
+		.trim()
 	return extensionByMime[clean] || clean.split('/')[1] || 'bin'
 }
 
@@ -38,10 +40,7 @@ export const convertMedia = async ({ buffer, inputExt, outputExt, run }) => {
 	try {
 		await writeFile(input, buffer)
 		await new Promise((resolve, reject) => {
-			run(ffmpeg(input), output)
-				.on('error', reject)
-				.on('end', resolve)
-				.save(output)
+			run(ffmpeg(input), output).on('error', reject).on('end', resolve).save(output)
 		})
 		return await readFile(output)
 	} finally {

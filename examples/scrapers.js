@@ -1,5 +1,16 @@
 #!/usr/bin/env node
-import { getGithubRepo, getLatestSamehadaku, getNpmPackage, getSamehadakuLegacyStream, getSamehadakuStream, scrapeWebsite, searchAnime, searchGithubRepos, searchNpmPackages, toJsonResult } from '../src/index.js'
+import {
+	getGithubRepo,
+	getLatestSamehadaku,
+	getNpmPackage,
+	getSamehadakuLegacyStream,
+	getSamehadakuStream,
+	scrapeWebsite,
+	searchAnime,
+	searchGithubRepos,
+	searchNpmPackages,
+	toJsonResult
+} from '../src/index.js'
 
 const [mode, ...args] = process.argv.slice(2)
 const input = args.join(' ')

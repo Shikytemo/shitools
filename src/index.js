@@ -29,14 +29,22 @@ export const fetchText = async (url, options = {}) => {
 
 export const toJsonResult = data => JSON.stringify(data, null, 2)
 
+export * from './aiimage.js'
+
 export * from './anime.js'
+export * from './cache.js'
 export * from './catbox.js'
 export * from './converter.js'
+export * from './errors.js'
+export * from './http.js'
 export * from './indo.js'
+export * from './lyrics.js'
 export * from './pinterest.js'
 export * from './registry.js'
 export * from './samehadaku.js'
 export * from './source-profiles.js'
 export * from './sources.js'
+export * from './tiktok.js'
+export * from './translate.js'
 export * from './utility.js'
 export * from './web.js'

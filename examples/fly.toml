@@ -1,0 +1,20 @@
+# Fly.io app config for examples/server.js. After installing flyctl:
+#   fly launch --copy-config --no-deploy
+#   fly deploy --dockerfile examples/Dockerfile
+app = "shitools-server"
+primary_region = "sin"
+
+[build]
+  dockerfile = "examples/Dockerfile"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "256mb"
