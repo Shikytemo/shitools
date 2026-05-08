@@ -150,7 +150,7 @@ export const renderHelp = () =>
 		'',
 		'  lyrics <query>                      Smart: split "Artist - Title", else Genius search + lyrics.ovh fetch',
 		'  lyrics search <query> [--limit=N]   Genius search hits',
-		'  lyrics get <artist> -- <title>      Direct lyrics.ovh fetch',
+		'  lyrics get "<artist>" "<title>"     Direct lyrics.ovh fetch (or use --artist=X --title=Y)',
 		'',
 		'  tiktok <url-or-query> [--limit=N]   Smart dispatch (URL → video, else search)',
 		'  tiktok video <url>                  Resolve to no-watermark MP4 + metadata',
@@ -312,13 +312,11 @@ const buildHandlers = deps => ({
 			case 'search':
 				return (await deps.searchLyrics(args.join(' '))).slice(0, limit)
 			case 'get': {
-				const dashIdx = args.findIndex(token => token === '--')
-				if (dashIdx === -1) throw new Error('lyrics get requires <artist> -- <title>')
-				const artist = args.slice(0, dashIdx).join(' ').trim()
-				const title = args
-					.slice(dashIdx + 1)
-					.join(' ')
-					.trim()
+				const artist = String(flags.artist ?? args[0] ?? '').trim()
+				const title = String(flags.title ?? args.slice(1).join(' ')).trim()
+				if (!artist || !title) {
+					throw new Error('lyrics get requires --artist=X --title=Y or "<artist>" "<title>"')
+				}
 				return deps.getLyrics(artist, title)
 			}
 			default: {

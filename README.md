@@ -273,7 +273,8 @@ CLI:
 shitools lyrics "lewis capaldi someone you loved"
 shitools lyrics "Adele - Hello"
 shitools lyrics search "hello adele" --limit=5
-shitools lyrics get Adele -- Hello
+shitools lyrics get "Adele" "Hello"
+shitools lyrics get --artist="Lewis Capaldi" --title="Someone You Loved"
 ```
 
 REST:
