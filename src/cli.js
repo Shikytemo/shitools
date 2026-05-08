@@ -148,6 +148,10 @@ export const renderHelp = () =>
 		'  url qr <text>',
 		'  social <url>                        Resolve TikTok / Instagram / YouTube via yt-dlp',
 		'',
+		'  lyrics <query>                      Smart: split "Artist - Title", else Genius search + lyrics.ovh fetch',
+		'  lyrics search <query> [--limit=N]   Genius search hits',
+		'  lyrics get <artist> -- <title>      Direct lyrics.ovh fetch',
+		'',
 		'  tiktok <url-or-query> [--limit=N]   Smart dispatch (URL → video, else search)',
 		'  tiktok video <url>                  Resolve to no-watermark MP4 + metadata',
 		'  tiktok search <query> [--limit=N]   Keyword feed search',
@@ -299,6 +303,30 @@ const buildHandlers = deps => ({
 		const input = rest.join(' ').trim()
 		if (!input) throw new Error('social requires <url>')
 		return deps.resolveSocialDownloader({ input })
+	},
+
+	lyrics: async (rest, flags) => {
+		const [sub, ...args] = rest
+		const limit = Number(flags.limit) > 0 ? Number(flags.limit) : 10
+		switch (sub) {
+			case 'search':
+				return (await deps.searchLyrics(args.join(' '))).slice(0, limit)
+			case 'get': {
+				const dashIdx = args.findIndex(token => token === '--')
+				if (dashIdx === -1) throw new Error('lyrics get requires <artist> -- <title>')
+				const artist = args.slice(0, dashIdx).join(' ').trim()
+				const title = args
+					.slice(dashIdx + 1)
+					.join(' ')
+					.trim()
+				return deps.getLyrics(artist, title)
+			}
+			default: {
+				const input = rest.join(' ').trim()
+				if (!input) throw new Error('lyrics requires <query> or "Artist - Title"')
+				return deps.lyrics(input)
+			}
+		}
 	},
 
 	tiktok: async (rest, flags) => {

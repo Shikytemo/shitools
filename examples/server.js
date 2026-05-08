@@ -47,11 +47,13 @@ import {
 	getRandomKatanimeQuotes,
 	getSamehadakuStream,
 	getSource,
+	getLyrics,
 	getTiktok,
 	getTiktokUser,
 	getTopAnime,
 	latestSource,
 	listSources,
+	lyrics,
 	pinterest,
 	scrapeSource,
 	scrapeWebsite,
@@ -62,6 +64,7 @@ import {
 	searchSamehadaku,
 	searchSource,
 	searchSources,
+	searchLyrics,
 	searchTiktok,
 	shortenUrl
 } from '../src/index.js'
@@ -104,6 +107,10 @@ const buildRoutes = () => {
 		'GET /github/search': q => searchGithubRepos(requireQuery(q, 'q')),
 		'GET /npm/package': q => getNpmPackage(requireQuery(q, 'q')),
 		'GET /npm/search': q => searchNpmPackages(requireQuery(q, 'q')),
+
+		'GET /lyrics': q => lyrics(requireQuery(q, 'q')),
+		'GET /lyrics/search': q => searchLyrics(requireQuery(q, 'q')),
+		'GET /lyrics/get': q => getLyrics(requireQuery(q, 'artist'), requireQuery(q, 'title')),
 
 		'GET /tiktok': q => getTiktok(requireQuery(q, 'url')),
 		'GET /tiktok/search': q =>

@@ -248,6 +248,42 @@ const legacy = await getSamehadakuLegacyStream('one-piece-episode-1155')
 console.log(legacy.episode.mirrors.find(item => item.directVideo))
 ```
 
+## Lyrics
+
+Lookup lirik dengan auto-search Genius + fetch teks dari lyrics.ovh. Dua-duanya
+publik tanpa API key.
+
+```js
+import { lyrics, searchLyrics, getLyrics } from '@shikytemo/shitools'
+
+// Smart: dia split "Artist - Title", atau search dulu kalau belum ada dash
+const song = await lyrics('lewis capaldi someone you loved')
+console.log(song.lyrics)
+
+// Cari kandidat di Genius
+const hits = await searchLyrics('hello adele')
+
+// Fetch langsung kalau udah tau exact artist + title
+const exact = await getLyrics('Adele', 'Hello')
+```
+
+CLI:
+
+```sh
+shitools lyrics "lewis capaldi someone you loved"
+shitools lyrics "Adele - Hello"
+shitools lyrics search "hello adele" --limit=5
+shitools lyrics get Adele -- Hello
+```
+
+REST:
+
+```
+GET /lyrics?q=<query-or-artist-dash-title>
+GET /lyrics/search?q=<query>
+GET /lyrics/get?artist=Adele&title=Hello
+```
+
 ## TikTok
 
 Native TikTok scraper via TikWM — no yt-dlp / Termux binaries / login required.
@@ -418,6 +454,7 @@ src/converter.js         Media converter helper
 src/errors.js            Scrape / RateLimit / Parse / Input error classes
 src/http.js              Shared httpClient (UA pool, retry, RateLimit-aware)
 src/indo.js              Public Indonesia anime quote APIs
+src/lyrics.js            Lyrics lookup (Genius search + lyrics.ovh)
 src/pinterest.js         Pinterest scraper
 src/registry.js          GitHub/NPM public REST wrapper
 src/samehadaku.js        Samehadaku search/episode stream scraper
