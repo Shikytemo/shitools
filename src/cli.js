@@ -200,6 +200,39 @@ export const renderHelp = () =>
 		'  catbox remove-album <short> <name...>',
 		'  catbox delete-album <short>',
 		'',
+		'Group-bot scrapers (Tier 2.5):',
+		'  wikipedia <topic> [--lang=id]       Smart search → top summary',
+		'  wikipedia search <q> [--lang=id]    Search hits',
+		'  wikipedia summary <title>           Direct REST v1 summary',
+		'  quran list                          Daftar 114 surah',
+		'  quran surah <nomor>                 Detail surah + ayat',
+		'  quran ayat <surah> <ayat>           Ayat tertentu',
+		'  sholat <kota> [--date=YYYY-MM-DD]   Smart: cari kota → jadwal',
+		'  sholat city <q>                     Cari kota',
+		'  sholat schedule <id> [date]         Jadwal langsung dari id',
+		'  cuaca <kota>                        Cuaca via wttr.in (global)',
+		'  bmkg <kota>                         Cuaca BMKG (Indonesia)',
+		'  bmkg search <q>                     Cari kode wilayah (adm4)',
+		'  bmkg forecast <adm4>                Prakiraan dari kode wilayah',
+		'  quote                               Random English quote (zenquotes)',
+		'  animequote                          Random anime quote (animechan)',
+		'  fact [--lang=en]                    Random useless fact',
+		'  joke [--category=Any]               Random joke (jokeapi)',
+		'  meme [--subreddit=memes]            Random meme (meme-api)',
+		'  kateglo <kata>                      Kamus Indonesia (definisi/sinonim/antonim)',
+		'  pypi <package>                      Metadata package PyPI',
+		'  ghtrend [--language=js] [--since=daily|weekly|monthly]',
+		'  ytsearch <q> [--limit=N]            YouTube search via Piped',
+		'  wallhaven <q> [--limit=N]           Wallpaper search (SFW)',
+		'  kurs <from> <to> [amount]           Currency conversion',
+		'  rates [base=USD]                    Latest exchange rates',
+		'  ip [<addr>]                         IP geolocation lookup',
+		'  reddit <sub> [--sort=hot] [--t=day] [--limit=N]',
+		'  news [source]                       Indonesian news (cnn-news, antara-news, ...)',
+		'  news sources                        List news sources',
+		'  ss <url> [--width=1280] [--height=720] [--save=path]',
+		'  mediafire <url>                     Resolve direct download link',
+		'',
 		'Global flags:',
 		'  --pretty, -p             Pretty-print JSON (default: on)',
 		'  --out=<file>, -o <file>  Write output to file instead of stdout',
@@ -406,6 +439,230 @@ const buildHandlers = (deps, io) => ({
 				return deps.tiktok(input, { limit })
 			}
 		}
+	},
+
+	wikipedia: async (rest, flags) => {
+		const [maybeSub, ...args] = rest
+		const lang = flags.lang ? String(flags.lang) : undefined
+		const limit = Number(flags.limit) > 0 ? Number(flags.limit) : 10
+		switch (maybeSub) {
+			case 'search':
+				return (await deps.searchWikipedia(args.join(' '), { lang, limit })).slice(0, limit)
+			case 'summary':
+				return deps.getWikipediaSummary(args.join(' '), { lang })
+			default: {
+				const query = rest.join(' ').trim()
+				if (!query) throw new Error('wikipedia requires <topic>')
+				return deps.wikipedia(query, { lang })
+			}
+		}
+	},
+	wiki: async (rest, flags) => {
+		const [maybeSub, ...args] = rest
+		const lang = flags.lang ? String(flags.lang) : undefined
+		const limit = Number(flags.limit) > 0 ? Number(flags.limit) : 10
+		switch (maybeSub) {
+			case 'search':
+				return (await deps.searchWikipedia(args.join(' '), { lang, limit })).slice(0, limit)
+			case 'summary':
+				return deps.getWikipediaSummary(args.join(' '), { lang })
+			default: {
+				const query = rest.join(' ').trim()
+				if (!query) throw new Error('wiki requires <topic>')
+				return deps.wikipedia(query, { lang })
+			}
+		}
+	},
+
+	quran: async rest => {
+		const [sub, ...args] = rest
+		switch (sub) {
+			case 'list':
+				return deps.listSurah()
+			case 'surah':
+				return deps.getSurah(Number(requirePositional(args, 0, 'nomor')))
+			case 'ayat':
+				return deps.getAyat(
+					Number(requirePositional(args, 0, 'surah')),
+					Number(requirePositional(args, 1, 'ayat'))
+				)
+			default:
+				throw new Error('quran requires list | surah <n> | ayat <s> <a>')
+		}
+	},
+	surah: async rest => {
+		const [first] = rest
+		if (!first) throw new Error('surah requires <nomor>')
+		return deps.getSurah(Number(first))
+	},
+	ayat: async rest => {
+		if (rest.length < 2) throw new Error('ayat requires <surah> <ayat>')
+		return deps.getAyat(Number(rest[0]), Number(rest[1]))
+	},
+
+	sholat: async (rest, flags) => {
+		const [sub, ...args] = rest
+		const date = flags.date ? String(flags.date) : undefined
+		switch (sub) {
+			case 'city':
+				return deps.searchSholatCity(args.join(' '))
+			case 'schedule': {
+				const id = requirePositional(args, 0, 'cityId')
+				const dateArg = args[1] ?? date
+				return deps.getSholatSchedule(id, dateArg)
+			}
+			default: {
+				const query = rest.join(' ').trim()
+				if (!query) throw new Error('sholat requires <kota>')
+				return deps.sholat(query, date)
+			}
+		}
+	},
+
+	cuaca: async rest => {
+		const query = rest.join(' ').trim()
+		if (!query) throw new Error('cuaca requires <lokasi>')
+		return deps.getWeather(query)
+	},
+	weather: async rest => {
+		const query = rest.join(' ').trim()
+		if (!query) throw new Error('weather requires <lokasi>')
+		return deps.getWeather(query)
+	},
+
+	bmkg: async rest => {
+		const [sub, ...args] = rest
+		switch (sub) {
+			case 'search':
+				return deps.searchBmkgArea(args.join(' '))
+			case 'forecast':
+				return deps.getBmkgWeather(requirePositional(args, 0, 'adm4'))
+			default: {
+				const query = rest.join(' ').trim()
+				if (!query) throw new Error('bmkg requires <kota>')
+				return deps.bmkg(query)
+			}
+		}
+	},
+
+	quote: async () => deps.randomQuote(),
+	animequote: async () => deps.randomAnimeQuote(),
+	'anime-quote': async () => deps.randomAnimeQuote(),
+
+	fact: async (_rest, flags) =>
+		deps.randomFact({ lang: flags.lang ? String(flags.lang) : undefined }),
+
+	joke: async (_rest, flags) =>
+		deps.randomJoke({
+			category: flags.category ? String(flags.category) : undefined,
+			lang: flags.lang ? String(flags.lang) : undefined
+		}),
+
+	meme: async (_rest, flags) =>
+		deps.randomMeme({ subreddit: flags.subreddit ? String(flags.subreddit) : undefined }),
+
+	kateglo: async rest => {
+		const word = rest.join(' ').trim()
+		if (!word) throw new Error('kateglo requires <kata>')
+		return deps.kateglo(word)
+	},
+
+	pypi: async rest => deps.getPypiPackage(requirePositional(rest, 0, 'package')),
+
+	ghtrend: async (_rest, flags) =>
+		deps.getGithubTrending({
+			language: flags.language ? String(flags.language) : undefined,
+			since: flags.since ? String(flags.since) : undefined
+		}),
+	'github-trending': async (_rest, flags) =>
+		deps.getGithubTrending({
+			language: flags.language ? String(flags.language) : undefined,
+			since: flags.since ? String(flags.since) : undefined
+		}),
+
+	ytsearch: async (rest, flags) => {
+		const query = rest.join(' ').trim()
+		if (!query) throw new Error('ytsearch requires <query>')
+		const limit = Number(flags.limit) > 0 ? Number(flags.limit) : 10
+		return deps.searchYoutube(query, { limit })
+	},
+
+	wallhaven: async (rest, flags) => {
+		const query = rest.join(' ').trim()
+		if (!query) throw new Error('wallhaven requires <query>')
+		const limit = Number(flags.limit) > 0 ? Number(flags.limit) : 12
+		return deps.searchWallhaven(query, { limit })
+	},
+	wallpaper: async (rest, flags) => {
+		const query = rest.join(' ').trim()
+		if (!query) throw new Error('wallpaper requires <query>')
+		const limit = Number(flags.limit) > 0 ? Number(flags.limit) : 12
+		return deps.searchWallhaven(query, { limit })
+	},
+
+	kurs: async rest => {
+		const from = requirePositional(rest, 0, 'from')
+		const to = requirePositional(rest, 1, 'to')
+		const amount = rest[2] !== undefined ? Number(rest[2]) : 1
+		return deps.convertCurrency(from, to, amount)
+	},
+	currency: async rest => {
+		const from = requirePositional(rest, 0, 'from')
+		const to = requirePositional(rest, 1, 'to')
+		const amount = rest[2] !== undefined ? Number(rest[2]) : 1
+		return deps.convertCurrency(from, to, amount)
+	},
+	rates: async rest => deps.getRates(rest[0] ?? 'USD'),
+
+	ip: async rest => deps.getIpInfo(rest[0] ?? ''),
+	iplookup: async rest => deps.getIpInfo(rest[0] ?? ''),
+
+	reddit: async (rest, flags) =>
+		deps.getSubreddit(requirePositional(rest, 0, 'subreddit'), {
+			sort: flags.sort ? String(flags.sort) : undefined,
+			t: flags.t ? String(flags.t) : undefined,
+			limit: Number(flags.limit) > 0 ? Number(flags.limit) : undefined
+		}),
+
+	news: async rest => {
+		const [sub] = rest
+		if (sub === 'sources') return deps.listNewsSources()
+		return deps.getNews(rest[0] ?? 'cnn-news')
+	},
+	berita: async rest => deps.getNews(rest[0] ?? 'cnn-news'),
+
+	ss: async (rest, flags) => {
+		const url = rest.join(' ').trim()
+		if (!url) throw new Error('ss requires <url>')
+		const opts = {
+			width: Number(flags.width) > 0 ? Number(flags.width) : undefined,
+			height: Number(flags.height) > 0 ? Number(flags.height) : undefined
+		}
+		if (flags.save) {
+			const bytes = await deps.fetchScreenshot(url, opts)
+			io.writeFile(String(flags.save), Buffer.from(bytes))
+			return { saved: String(flags.save), url, bytes: bytes.length }
+		}
+		return { url: deps.getScreenshotUrl(url, opts) }
+	},
+	screenshot: async (rest, flags) => {
+		const url = rest.join(' ').trim()
+		if (!url) throw new Error('screenshot requires <url>')
+		const opts = {
+			width: Number(flags.width) > 0 ? Number(flags.width) : undefined,
+			height: Number(flags.height) > 0 ? Number(flags.height) : undefined
+		}
+		if (flags.save) {
+			const bytes = await deps.fetchScreenshot(url, opts)
+			io.writeFile(String(flags.save), Buffer.from(bytes))
+			return { saved: String(flags.save), url, bytes: bytes.length }
+		}
+		return { url: deps.getScreenshotUrl(url, opts) }
+	},
+
+	mediafire: async rest => {
+		const url = requirePositional(rest, 0, 'url')
+		return deps.getMediafire(url)
 	},
 
 	catbox: async rest => {
