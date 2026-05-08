@@ -233,6 +233,20 @@ export const renderHelp = () =>
 		'  ss <url> [--width=1280] [--height=720] [--save=path]',
 		'  mediafire <url>                     Resolve direct download link',
 		'',
+		'Group-bot scrapers (Tier 2.6):',
+		'  npmstalk <package>                  npm registry metadata + version stats',
+		'  githubstalk <user> [--repos=6]      GitHub profile + recent repos',
+		'  igstalk <user>                      Instagram public profile (dumpoir.com)',
+		'  tiktokstalk <user>                  TikTok profile + stats (TikWM)',
+		'  short <url> | shorten <url>         TinyURL shortener',
+		'  qr <text> [--size=300]              QR code image URL (api.qrserver.com)',
+		'  qr-decode <image-url>               Read QR code from a remote image',
+		'  urban <term> [--limit=N]            Urban Dictionary definitions',
+		'  waifu [category] [--nsfw]           Random anime image (waifu.pics)',
+		'  waifu-list                          List supported categories',
+		'  sfile <q-or-url>                    sfile.mobi search or direct DL',
+		'  spotifydl <url>                     Spotify track → MP3 (fabdl.com)',
+		'',
 		'Global flags:',
 		'  --pretty, -p             Pretty-print JSON (default: on)',
 		'  --out=<file>, -o <file>  Write output to file instead of stdout',
@@ -663,6 +677,73 @@ const buildHandlers = (deps, io) => ({
 	mediafire: async rest => {
 		const url = requirePositional(rest, 0, 'url')
 		return deps.getMediafire(url)
+	},
+
+	npmstalk: async rest => deps.npmStalk(requirePositional(rest, 0, 'package')),
+
+	githubstalk: async (rest, flags) => {
+		const username = requirePositional(rest, 0, 'username')
+		const repoLimit = Number(flags.repos) > 0 ? Number(flags.repos) : undefined
+		return deps.githubProfile(username, { repoLimit })
+	},
+	'gh-profile': async (rest, flags) => {
+		const username = requirePositional(rest, 0, 'username')
+		const repoLimit = Number(flags.repos) > 0 ? Number(flags.repos) : undefined
+		return deps.githubProfile(username, { repoLimit })
+	},
+
+	igstalk: async rest => deps.igStalk(requirePositional(rest, 0, 'username')),
+	tiktokstalk: async rest => deps.tiktokStalk(requirePositional(rest, 0, 'username')),
+
+	short: async rest => {
+		const url = rest.join(' ').trim()
+		if (!url) throw new Error('short requires <url>')
+		const result = await deps.shortenUrl(url)
+		return { short: result, original: url }
+	},
+	shorten: async rest => {
+		const url = rest.join(' ').trim()
+		if (!url) throw new Error('shorten requires <url>')
+		const result = await deps.shortenUrl(url)
+		return { short: result, original: url }
+	},
+
+	qr: async (rest, flags) => {
+		const text = rest.join(' ').trim()
+		if (!text) throw new Error('qr requires <text>')
+		const size = Number(flags.size) > 0 ? Number(flags.size) : undefined
+		return { url: deps.qrCodeUrl(text, { size }) }
+	},
+	'qr-decode': async rest => {
+		const url = rest.join(' ').trim()
+		if (!url) throw new Error('qr-decode requires <image-url>')
+		return { data: await deps.decodeQrCode(url) }
+	},
+
+	urban: async (rest, flags) => {
+		const term = rest.join(' ').trim()
+		if (!term) throw new Error('urban requires <term>')
+		const limit = Number(flags.limit) > 0 ? Number(flags.limit) : undefined
+		return deps.urbanDefine(term, { limit })
+	},
+
+	waifu: async (rest, flags) => {
+		const category = rest[0] ?? 'waifu'
+		const type = flags.nsfw ? 'nsfw' : 'sfw'
+		return deps.waifuImage(category, { type })
+	},
+	'waifu-list': async () => deps.listWaifuCategories(),
+
+	sfile: async rest => {
+		const input = rest.join(' ').trim()
+		if (!input) throw new Error('sfile requires <query-or-url>')
+		return deps.sfile(input)
+	},
+
+	spotifydl: async rest => {
+		const url = rest.join(' ').trim()
+		if (!url) throw new Error('spotifydl requires <spotify-url>')
+		return deps.spotifyDl(url)
 	},
 
 	catbox: async rest => {
