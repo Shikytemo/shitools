@@ -30,6 +30,7 @@ export const fetchText = async (url, options = {}) => {
 export const toJsonResult = data => JSON.stringify(data, null, 2)
 
 export * from './anime.js'
+export * from './cache.js'
 export * from './catbox.js'
 export * from './converter.js'
 export * from './errors.js'

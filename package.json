@@ -5,6 +5,7 @@
 	"main": "src/index.js",
 	"types": "types/index.d.ts",
 	"bin": {
+		"shitools": "bin/shitools.js",
 		"shitools-catbox": "examples/catbox.js",
 		"shitools-pinterest": "examples/pinterest.js",
 		"shitools-scrapers": "examples/scrapers.js",
@@ -13,6 +14,7 @@
 	"type": "module",
 	"files": [
 		"src",
+		"bin",
 		"examples",
 		"types",
 		"README.md"
@@ -21,13 +23,16 @@
 		"start": "node src/index.js",
 		"example": "node examples/basic-fetch.js",
 		"catbox": "node examples/catbox.js",
-		"check": "node --check src/index.js && node --check src/anime.js && node --check src/catbox.js && node --check src/converter.js && node --check src/errors.js && node --check src/http.js && node --check src/indo.js && node --check src/pinterest.js && node --check src/registry.js && node --check src/samehadaku.js && node --check src/source-profiles.js && node --check src/sources.js && node --check src/utility.js && node --check src/web.js && node --check examples/basic-fetch.js && node --check examples/catbox.js && node --check examples/pinterest.js && node --check examples/scrapers.js && node --check examples/sources.js",
+		"server": "node examples/server.js",
+		"cli": "node bin/shitools.js",
+		"check": "node --check bin/shitools.js && node --check src/index.js && node --check src/anime.js && node --check src/cache.js && node --check src/catbox.js && node --check src/cli.js && node --check src/converter.js && node --check src/errors.js && node --check src/http.js && node --check src/indo.js && node --check src/pinterest.js && node --check src/registry.js && node --check src/samehadaku.js && node --check src/source-profiles.js && node --check src/sources.js && node --check src/utility.js && node --check src/web.js && node --check examples/basic-fetch.js && node --check examples/catbox.js && node --check examples/pinterest.js && node --check examples/scrapers.js && node --check examples/server.js && node --check examples/sources.js",
 		"lint": "eslint .",
 		"format": "prettier --write \"**/*.{js,json,md,yml,yaml}\"",
 		"format:check": "prettier --check \"**/*.{js,json,md,yml,yaml}\"",
 		"test": "vitest",
 		"test:run": "vitest run",
 		"build:types": "tsc -p tsconfig.json",
+		"prepublishOnly": "npm run lint && npm run check && npm run test:run && npm run build:types",
 		"prepare": "husky || true"
 	},
 	"keywords": [

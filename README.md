@@ -1,5 +1,11 @@
 # Shitools
 
+[![npm version](https://img.shields.io/npm/v/@shikytemo/shitools.svg?logo=npm&color=cb3837)](https://www.npmjs.com/package/@shikytemo/shitools)
+[![npm downloads](https://img.shields.io/npm/dm/@shikytemo/shitools.svg?logo=npm)](https://www.npmjs.com/package/@shikytemo/shitools)
+[![Node.js](https://img.shields.io/node/v/@shikytemo/shitools.svg?logo=node.js)](#requirements)
+[![License](https://img.shields.io/github/license/Shikytemo/shitools.svg)](./LICENSE)
+[![Tests](https://img.shields.io/badge/tests-vitest-6E9F18?logo=vitest)](#dev)
+
 Tempat ngumpulin tools scrape dan automation kecil.
 
 ## Fokus
@@ -12,7 +18,43 @@ Tempat ngumpulin tools scrape dan automation kecil.
 ## Install
 
 ```sh
-npm install
+npm install @shikytemo/shitools
+```
+
+## Requirements
+
+- Node.js **>= 20** (uses native `fetch`, `AbortController`, ESM only).
+- `ffmpeg` binary on PATH (only if you use `src/converter.js`).
+
+## CLI
+
+Setelah install, satu binary `shitools` jadi pintu masuk semua module:
+
+```sh
+shitools                                       # show help
+shitools version
+
+shitools sources list
+shitools sources find weather
+shitools source samehadaku search "one piece"
+shitools source samehadaku scrape "gnosia episode 20"
+
+shitools pinterest "anime girl" --limit=20
+shitools anime search "demon slayer"
+shitools anime top
+shitools katanime random
+shitools registry github Shikytemo/shitools
+shitools registry npm @shikytemo/shitools
+shitools web meta https://example.com
+shitools url shorten https://example.com/very/long
+shitools url qr "hello world"
+
+shitools catbox upload-file ./image.jpg
+shitools catbox create-album "My Album" abc123.jpg def456.png
+
+# global flags
+shitools anime top --out=top.json     # write to file instead of stdout
+shitools anime top --no-pretty        # compact JSON
 ```
 
 ## Example
@@ -206,23 +248,146 @@ const legacy = await getSamehadakuLegacyStream('one-piece-episode-1155')
 console.log(legacy.episode.mirrors.find(item => item.directVideo))
 ```
 
+## Cache
+
+Memoize scraper calls dengan TTL biar gak hammer upstream:
+
+```js
+import { withCache, memoryStore, getSamehadakuStream } from '@shikytemo/shitools'
+
+const cached = withCache(getSamehadakuStream, {
+	store: memoryStore({ ttlMs: 10 * 60_000, maxEntries: 200 })
+})
+
+await cached('one piece episode 1124') // hits upstream
+await cached('one piece episode 1124') // returns cached
+```
+
+Store interface-nya sengaja kecil (`get` / `set` / `delete` / `clear`), jadi gampang
+swap ke Redis / file / KV-edge:
+
+```js
+const redisStore = {
+	async get(key) {
+		const raw = await redis.get(key)
+		return raw ? JSON.parse(raw) : undefined
+	},
+	async set(key, value, ttlMs) {
+		await redis.set(key, JSON.stringify(value), 'PX', ttlMs ?? 60_000)
+	},
+	async delete(key) {
+		await redis.del(key)
+	},
+	async clear() {}
+}
+
+const cached = withCache(scrapePinterest, { store: redisStore, ttlMs: 60_000 })
+```
+
+## REST server
+
+Drop-in REST microservice (zero new dependencies, hanya `node:http`) ada di `examples/server.js`.
+
+```sh
+npm run server                # PORT=3000 by default
+PORT=8787 npm run server      # custom port
+```
+
+Routes (semua GET, semua return JSON):
+
+| Path                 | Query        | Maps to                 |
+| -------------------- | ------------ | ----------------------- |
+| `/health`            | —            | server heartbeat        |
+| `/pinterest`         | `q`, `limit` | `pinterest()`           |
+| `/anime/search`      | `q`          | `searchAnime()`         |
+| `/anime/top`         | —            | `getTopAnime()`         |
+| `/samehadaku/scrape` | `q`          | `getSamehadakuStream()` |
+| `/source/:id/search` | `q`          | `searchSource(id, q)`   |
+| `/source/:id/scrape` | `q`          | `scrapeSource(id, q)`   |
+| `/url/qr`            | `text`       | `createQrImageUrl()`    |
+
+`RateLimitError` di-map ke 429, missing query param ke 400, error lain ke 500. Lihat
+`examples/server.js` untuk daftar route lengkap.
+
+Container & Fly.io deploy:
+
+```sh
+docker build -f examples/Dockerfile -t shitools-server .
+docker run --rm -p 3000:3000 shitools-server
+
+fly launch --copy-config --no-deploy
+fly deploy --dockerfile examples/Dockerfile
+```
+
+## Errors
+
+Semua scraper boleh throw salah satu dari class berikut — bot/library code bisa
+`instanceof`-branching tanpa parse string error:
+
+```js
+import {
+	ScrapeError,
+	RateLimitError,
+	ParseError,
+	UnsupportedSourceError,
+	InvalidInputError
+} from '@shikytemo/shitools'
+
+try {
+	await searchAnime('one piece')
+} catch (error) {
+	if (error instanceof RateLimitError) sleep(error.retryAfter ?? 5_000)
+	else if (error instanceof ParseError) console.warn('upstream HTML berubah')
+	else throw error
+}
+```
+
+## TypeScript
+
+Library 100% JavaScript, tapi `npm install @shikytemo/shitools` udah kasih
+`types/*.d.ts` yang di-generate dari JSDoc. Editor (VSCode / Cursor / WebStorm)
+otomatis dapet autocomplete + signature help — gak perlu pasang `@types/*`.
+
+## Dev
+
+```sh
+npm install
+npm run lint                   # eslint flat config + rules
+npm run format                 # prettier --write
+npm run check                  # node --check semua *.js
+npm run test                   # vitest watch
+npm run test:run               # vitest single run
+npm run build:types            # generate types/*.d.ts
+npm run cli -- anime search "one piece"
+```
+
+Pre-commit hook (husky) jalanin prettier + eslint --fix di staged files
+sebelum commit.
+
 ## Struktur
 
 ```txt
-src/             core helper
-src/anime.js    Jikan anime/manga REST wrapper
-src/catbox.js   Catbox API wrapper
-src/converter.js Media converter helper
-src/indo.js     Public Indonesia anime quote APIs
-src/pinterest.js Pinterest scraper
-src/registry.js GitHub/NPM public REST wrapper
-src/samehadaku.js Samehadaku search/episode stream scraper
-src/source-profiles.js Public source profile catalog
-src/sources.js Source catalog router/search/fetch helpers
-src/utility.js Shortlink, QR, and lightweight social helper
-src/web.js      Generic website metadata scraper
-examples/        contoh pemakaian
-data/            output lokal, tidak ikut git
+bin/shitools.js          unified CLI entry (subcommand dispatch)
+src/                     core helper
+src/anime.js             Jikan anime/manga REST wrapper
+src/cache.js             memoryStore + withCache memoizer
+src/catbox.js            Catbox API wrapper
+src/cli.js               CLI parser + dispatcher (testable, DI-ready)
+src/converter.js         Media converter helper
+src/errors.js            Scrape / RateLimit / Parse / Input error classes
+src/http.js              Shared httpClient (UA pool, retry, RateLimit-aware)
+src/indo.js              Public Indonesia anime quote APIs
+src/pinterest.js         Pinterest scraper
+src/registry.js          GitHub/NPM public REST wrapper
+src/samehadaku.js        Samehadaku search/episode stream scraper
+src/source-profiles.js   Public source profile catalog (auto-generated)
+src/sources.js           Source catalog router/search/fetch helpers
+src/utility.js           Shortlink, QR, and lightweight social helper
+src/web.js               Generic website metadata scraper
+examples/                contoh pemakaian + REST server + Dockerfile + fly.toml
+tests/                   vitest unit tests
+types/                   generated .d.ts (gitignored, packed at publish)
+data/                    output lokal, tidak ikut git
 ```
 
 ## Catatan
