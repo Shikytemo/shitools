@@ -2,10 +2,14 @@ import axios from 'axios'
 import * as cheerio from 'cheerio'
 
 const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID || 'acc6302297e040aeb6e4ac1fbdfd62c3'
-const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET || '0e8439a1280a43aba9a5bc0a16f3f009'
+const SPOTIFY_CLIENT_SECRET =
+	process.env.SPOTIFY_CLIENT_SECRET || '0e8439a1280a43aba9a5bc0a16f3f009'
 const TOKEN_ENDPOINT = 'https://accounts.spotify.com/api/token'
 
-const cleanText = value => String(value || '').replace(/\s+/g, ' ').trim()
+const cleanText = value =>
+	String(value || '')
+		.replace(/\s+/g, ' ')
+		.trim()
 
 const isSpotifyUrl = input => {
 	try {
@@ -117,7 +121,10 @@ export const searchSpotifyTracks = async (query, options = {}) => {
 	if (!cleanQuery) throw new Error('Spotify search query is required')
 
 	const limit = Number(options.limit || 20)
-	const data = await spotifyRequest(`/search?q=${encodeURIComponent(cleanQuery)}&type=track&limit=${limit}`, options)
+	const data = await spotifyRequest(
+		`/search?q=${encodeURIComponent(cleanQuery)}&type=track&limit=${limit}`,
+		options
+	)
 
 	return {
 		query: cleanQuery,
@@ -130,23 +137,28 @@ export const searchSpotifyAlbums = async (query, options = {}) => {
 	if (!cleanQuery) throw new Error('Spotify search query is required')
 
 	const limit = Number(options.limit || 20)
-	const data = await spotifyRequest(`/search?q=${encodeURIComponent(cleanQuery)}&type=album&limit=${limit}`, options)
+	const data = await spotifyRequest(
+		`/search?q=${encodeURIComponent(cleanQuery)}&type=album&limit=${limit}`,
+		options
+	)
 
 	return {
 		query: cleanQuery,
-		results: (data.albums?.items || []).map(item => {
-			if (!item) return null
-			const artists = (item.artists || []).map(a => a.name).join(', ')
-			return {
-				id: item.id,
-				name: item.name,
-				artists,
-				image: (item.images || [])[0]?.url || null,
-				releaseDate: item.release_date || null,
-				totalTracks: item.total_tracks || 0,
-				url: (item.external_urls || {}).spotify || null
-			}
-		}).filter(Boolean)
+		results: (data.albums?.items || [])
+			.map(item => {
+				if (!item) return null
+				const artists = (item.artists || []).map(a => a.name).join(', ')
+				return {
+					id: item.id,
+					name: item.name,
+					artists,
+					image: (item.images || [])[0]?.url || null,
+					releaseDate: item.release_date || null,
+					totalTracks: item.total_tracks || 0,
+					url: (item.external_urls || {}).spotify || null
+				}
+			})
+			.filter(Boolean)
 	}
 }
 
@@ -155,22 +167,27 @@ export const searchSpotifyArtists = async (query, options = {}) => {
 	if (!cleanQuery) throw new Error('Spotify search query is required')
 
 	const limit = Number(options.limit || 20)
-	const data = await spotifyRequest(`/search?q=${encodeURIComponent(cleanQuery)}&type=artist&limit=${limit}`, options)
+	const data = await spotifyRequest(
+		`/search?q=${encodeURIComponent(cleanQuery)}&type=artist&limit=${limit}`,
+		options
+	)
 
 	return {
 		query: cleanQuery,
-		results: (data.artists?.items || []).map(item => {
-			if (!item) return null
-			return {
-				id: item.id,
-				name: item.name,
-				genres: item.genres || [],
-				followers: item.followers?.total || 0,
-				popularity: item.popularity || 0,
-				image: (item.images || [])[0]?.url || null,
-				url: (item.external_urls || {}).spotify || null
-			}
-		}).filter(Boolean)
+		results: (data.artists?.items || [])
+			.map(item => {
+				if (!item) return null
+				return {
+					id: item.id,
+					name: item.name,
+					genres: item.genres || [],
+					followers: item.followers?.total || 0,
+					popularity: item.popularity || 0,
+					image: (item.images || [])[0]?.url || null,
+					url: (item.external_urls || {}).spotify || null
+				}
+			})
+			.filter(Boolean)
 	}
 }
 
@@ -179,22 +196,27 @@ export const searchSpotifyPlaylists = async (query, options = {}) => {
 	if (!cleanQuery) throw new Error('Spotify search query is required')
 
 	const limit = Number(options.limit || 20)
-	const data = await spotifyRequest(`/search?q=${encodeURIComponent(cleanQuery)}&type=playlist&limit=${limit}`, options)
+	const data = await spotifyRequest(
+		`/search?q=${encodeURIComponent(cleanQuery)}&type=playlist&limit=${limit}`,
+		options
+	)
 
 	return {
 		query: cleanQuery,
-		results: (data.playlists?.items || []).map(item => {
-			if (!item) return null
-			return {
-				id: item.id,
-				name: item.name,
-				description: item.description || null,
-				owner: item.owner?.display_name || null,
-				tracksTotal: item.tracks?.total || 0,
-				image: (item.images || [])[0]?.url || null,
-				url: (item.external_urls || {}).spotify || null
-			}
-		}).filter(Boolean)
+		results: (data.playlists?.items || [])
+			.map(item => {
+				if (!item) return null
+				return {
+					id: item.id,
+					name: item.name,
+					description: item.description || null,
+					owner: item.owner?.display_name || null,
+					tracksTotal: item.tracks?.total || 0,
+					image: (item.images || [])[0]?.url || null,
+					url: (item.external_urls || {}).spotify || null
+				}
+			})
+			.filter(Boolean)
 	}
 }
 
@@ -202,7 +224,10 @@ export const getSpotifyTrack = async (trackId, options = {}) => {
 	const id = extractSpotifyId(trackId, 'track') || trackId
 	if (!id) throw new Error('Spotify track ID is required')
 
-	const data = await spotifyRequest(`/tracks/${id}${options.market ? `?market=${options.market}` : ''}`, options)
+	const data = await spotifyRequest(
+		`/tracks/${id}${options.market ? `?market=${options.market}` : ''}`,
+		options
+	)
 	return normalizeTrack(data)
 }
 
@@ -242,11 +267,13 @@ export const getSpotifyPlaylistTracks = async (playlistId, options = {}) => {
 	const limit = Number(options.limit || 100)
 	const data = await spotifyRequest(`/playlists/${id}/tracks?limit=${limit}`, options)
 
-	const tracks = (data.items || []).map(item => {
-		const track = item.track
-		if (!track) return null
-		return normalizeTrack(track)
-	}).filter(Boolean)
+	const tracks = (data.items || [])
+		.map(item => {
+			const track = item.track
+			if (!track) return null
+			return normalizeTrack(track)
+		})
+		.filter(Boolean)
 
 	return {
 		id: data.id || id,
@@ -297,7 +324,8 @@ const fetchEmbedMetadata = async (url, options = {}) => {
 		const response = await fetch(embedUrl, {
 			headers: {
 				accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-				'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+				'user-agent':
+					'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 			},
 			signal: controller.signal
 		})
@@ -318,7 +346,9 @@ const fetchEmbedMetadata = async (url, options = {}) => {
 		const entity = props.track || props.state?.data?.entity || props.data?.entity
 		if (!entity) return null
 
-		const artists = (entity.artists || []).map(a => typeof a === 'string' ? a : (a.name || '')).filter(Boolean)
+		const artists = (entity.artists || [])
+			.map(a => (typeof a === 'string' ? a : a.name || ''))
+			.filter(Boolean)
 
 		return {
 			title: entity.title || entity.name || null,
@@ -354,18 +384,24 @@ const fabdlHeaders = {
 
 const tryFabdlDownload = async (url, options = {}) => {
 	try {
-		const getInfoResponse = await axios.get(`https://api.fabdl.com/spotify/get?url=${encodeURIComponent(url)}`, {
-			headers: { ...fabdlHeaders, ...(options.headers || {}) },
-			timeout: options.timeoutMs || 30000
-		})
+		const getInfoResponse = await axios.get(
+			`https://api.fabdl.com/spotify/get?url=${encodeURIComponent(url)}`,
+			{
+				headers: { ...fabdlHeaders, ...(options.headers || {}) },
+				timeout: options.timeoutMs || 30000
+			}
+		)
 
 		const info = getInfoResponse.data?.result
 		if (!info || !info.gid || !info.id) return null
 
-		const convertResponse = await axios.get(`https://api.fabdl.com/spotify/mp3-convert-task/${info.gid}/${info.id}`, {
-			headers: { ...fabdlHeaders, ...(options.headers || {}) },
-			timeout: options.timeoutMs || 30000
-		})
+		const convertResponse = await axios.get(
+			`https://api.fabdl.com/spotify/mp3-convert-task/${info.gid}/${info.id}`,
+			{
+				headers: { ...fabdlHeaders, ...(options.headers || {}) },
+				timeout: options.timeoutMs || 30000
+			}
+		)
 
 		const convertResult = convertResponse.data?.result
 		if (!convertResult?.download_url) return null
@@ -423,7 +459,7 @@ export const spotifyDl = async (url, options = {}) => {
 }
 
 export const SpotifyAPI = async (options = {}) => {
-	const token = await getSpotifyAccessToken(options)
+	await getSpotifyAccessToken(options)
 
 	return {
 		searchTracks: (query, opts) => searchSpotifyTracks(query, { ...options, ...opts }),
