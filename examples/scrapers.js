@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 import {
+	getAnoboyStream,
 	getGithubRepo,
+	getLatestAnoboy,
+	getLatestOtakudesu,
 	getLatestSamehadaku,
 	getNpmPackage,
+	getOtakudesuStream,
 	getSamehadakuLegacyStream,
 	getSamehadakuStream,
 	scrapeWebsite,
@@ -28,6 +32,10 @@ if (!mode || !input) {
 	console.log('  node examples/scrapers.js samehadaku gnosia episode 20')
 	console.log('  node examples/scrapers.js samehadaku-legacy one-piece-episode-1155')
 	console.log('  node examples/scrapers.js samehadaku-latest latest')
+	console.log('  node examples/scrapers.js otakudesu one piece episode 1')
+	console.log('  node examples/scrapers.js otakudesu-latest latest')
+	console.log('  node examples/scrapers.js anoboy one piece')
+	console.log('  node examples/scrapers.js anoboy-latest latest')
 	process.exit(1)
 }
 
@@ -58,6 +66,18 @@ switch (mode) {
 		break
 	case 'samehadaku-latest':
 		print(await getLatestSamehadaku())
+		break
+	case 'otakudesu':
+		print(await getOtakudesuStream(input))
+		break
+	case 'otakudesu-latest':
+		print(await getLatestOtakudesu())
+		break
+	case 'anoboy':
+		print(await getAnoboyStream(input))
+		break
+	case 'anoboy-latest':
+		print(await getLatestAnoboy())
 		break
 	default:
 		throw new Error(`Unknown mode: ${mode}`)

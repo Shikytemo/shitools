@@ -1,6 +1,8 @@
 import { getRandomKatanimeQuotes, searchKatanimeQuotes } from './indo.js'
 import { pinterest, scrapePinterest, searchPinterest } from './pinterest.js'
 import { getLatestSamehadaku, getSamehadakuStream, searchSamehadaku } from './samehadaku.js'
+import { getLatestOtakudesu, getOtakudesuStream, searchOtakudesu } from './otakudesu.js'
+import { getLatestAnoboy, getAnoboyStream, searchAnoboy } from './anoboy.js'
 import { sourceProfiles } from './source-profiles.js'
 import { scrapeWebsite } from './web.js'
 
@@ -59,6 +61,40 @@ const builtInSources = [
 		supports: ['search', 'random'],
 		search: searchKatanimeQuotes,
 		random: getRandomKatanimeQuotes
+	},
+	{
+		id: 'otakudesu',
+		name: 'Otakudesu',
+		category: 'Anime',
+		type: 'scraper',
+		url: 'https://otakudesu.fit',
+		homepage: 'https://otakudesu.fit',
+		description: 'Anime search, latest episode, series episode, and stream resolver.',
+		auth: 'none',
+		https: true,
+		cors: 'Unknown',
+		tags: ['anime', 'stream', 'indonesia', 'otakudesu'],
+		supports: ['search', 'scrape', 'latest', 'stream'],
+		search: searchOtakudesu,
+		scrape: getOtakudesuStream,
+		latest: getLatestOtakudesu
+	},
+	{
+		id: 'anoboy',
+		name: 'Anoboy',
+		category: 'Anime',
+		type: 'scraper',
+		url: 'https://anoboy.cv',
+		homepage: 'https://anoboy.cv',
+		description: 'Anime search, latest episode, series episode, and stream resolver.',
+		auth: 'none',
+		https: true,
+		cors: 'Unknown',
+		tags: ['anime', 'stream', 'indonesia', 'anoboy'],
+		supports: ['search', 'scrape', 'latest', 'stream'],
+		search: searchAnoboy,
+		scrape: getAnoboyStream,
+		latest: getLatestAnoboy
 	}
 ]
 
