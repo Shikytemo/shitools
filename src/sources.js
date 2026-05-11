@@ -3,6 +3,7 @@ import { pinterest, scrapePinterest, searchPinterest } from './pinterest.js'
 import { getLatestSamehadaku, getSamehadakuStream, searchSamehadaku } from './samehadaku.js'
 import { getLatestOtakudesu, getOtakudesuStream, searchOtakudesu } from './otakudesu.js'
 import { getLatestAnoboy, getAnoboyStream, searchAnoboy } from './anoboy.js'
+import { searchSpotifyTracks, spotifyDl } from './spotify.js'
 import { sourceProfiles } from './source-profiles.js'
 import { scrapeWebsite } from './web.js'
 
@@ -95,6 +96,22 @@ const builtInSources = [
 		search: searchAnoboy,
 		scrape: getAnoboyStream,
 		latest: getLatestAnoboy
+	},
+	{
+		id: 'spotify',
+		name: 'Spotify',
+		category: 'Music',
+		type: 'scraper',
+		url: 'https://open.spotify.com',
+		homepage: 'https://open.spotify.com',
+		description: 'Spotify track search, metadata, and MP3 download via fabdl.',
+		auth: 'client-credentials',
+		https: true,
+		cors: 'Unknown',
+		tags: ['music', 'spotify', 'download', 'stream'],
+		supports: ['search', 'scrape', 'download'],
+		search: searchSpotifyTracks,
+		scrape: spotifyDl
 	}
 ]
 

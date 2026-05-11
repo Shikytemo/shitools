@@ -9,10 +9,13 @@ import {
 	getOtakudesuStream,
 	getSamehadakuLegacyStream,
 	getSamehadakuStream,
+	getSpotifyTrack,
 	scrapeWebsite,
 	searchAnime,
 	searchGithubRepos,
 	searchNpmPackages,
+	searchSpotifyTracks,
+	spotifyDl,
 	toJsonResult
 } from '../src/index.js'
 
@@ -36,6 +39,9 @@ if (!mode || !input) {
 	console.log('  node examples/scrapers.js otakudesu-latest latest')
 	console.log('  node examples/scrapers.js anoboy one piece')
 	console.log('  node examples/scrapers.js anoboy-latest latest')
+	console.log('  node examples/scrapers.js spotify-search imagine dragons')
+	console.log('  node examples/scrapers.js spotify-track 3n3Gp0U8wu3Y0YD1KmSPBZ')
+	console.log('  node examples/scrapers.js spotify-dl https://open.spotify.com/track/3n3Gp0U8wu3Y0YD1KmSPBZ')
 	process.exit(1)
 }
 
@@ -78,6 +84,15 @@ switch (mode) {
 		break
 	case 'anoboy-latest':
 		print(await getLatestAnoboy())
+		break
+	case 'spotify-search':
+		print(await searchSpotifyTracks(input))
+		break
+	case 'spotify-track':
+		print(await getSpotifyTrack(input))
+		break
+	case 'spotify-dl':
+		print(await spotifyDl(input))
 		break
 	default:
 		throw new Error(`Unknown mode: ${mode}`)
